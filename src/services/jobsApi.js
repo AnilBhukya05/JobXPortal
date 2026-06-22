@@ -44,6 +44,7 @@ function normalizeJob(result) {
     remote: isRemote,
     type: jobTypeLabel(result),
     portal: "live",
+    source: "Multiple Job Sites",
     postedDaysAgo: daysAgo(result.created),
     tags: result.category && result.category.label ? [result.category.label] : ["General"],
     salary: formatSalary(result.salary_min, result.salary_max),

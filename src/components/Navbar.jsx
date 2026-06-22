@@ -24,7 +24,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 relative bg-[#0B0E14]/85 backdrop-blur-xl border-b border-[#1E2330]">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="h-20 md:h-24 flex items-center justify-between">
-         <Link
+          <Link
             to="/"
             onClick={() => setOpen(false)}
             className="font-display text-3xl md:text-4xl font-bold tracking-tight hover:opacity-90 transition"
@@ -51,21 +51,6 @@ export default function Navbar() {
                 </Link>
               );
             })}
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/login"
-              className="px-5 py-2.5 rounded-lg text-[#8A8F9C] hover:text-[#F5F3EE] transition cursor-pointer font-mono text-sm uppercase tracking-wider"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="px-6 py-3 rounded-lg font-semibold text-[#0B0E14] bg-[#2DD4BF] hover:bg-[#5eead4] transition-all duration-300 cursor-pointer"
-            >
-              Register
-            </Link>
           </div>
 
           {/* MOBILE TOGGLE */}
@@ -97,29 +82,15 @@ export default function Navbar() {
                     to={item.path}
                     onClick={() => setOpen(false)}
                     className={`px-4 py-3 rounded-lg ${
-                      isActive ? "text-[#0B0E14] bg-[#FFB020]" : "text-[#8A8F9C]"
+                      isActive
+                        ? "text-[#0B0E14] bg-[#FFB020]"
+                        : "text-[#8A8F9C]"
                     }`}
                   >
                     {item.name}
                   </Link>
                 );
               })}
-              <div className="flex gap-3 mt-3">
-                <Link
-                  to="/login"
-                  onClick={() => setOpen(false)}
-                  className="flex-1 text-center px-5 py-3 rounded-lg border border-[#1E2330] text-[#8A8F9C]"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setOpen(false)}
-                  className="flex-1 text-center px-5 py-3 rounded-lg bg-[#2DD4BF] text-[#0B0E14] font-semibold"
-                >
-                  Register
-                </Link>
-              </div>
             </div>
           </motion.div>
         )}

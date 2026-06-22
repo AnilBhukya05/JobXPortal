@@ -67,6 +67,7 @@ export default function JobDetails() {
               <span className="px-2 py-1 rounded border border-[#FFB020]/40 text-[#FFB020] bg-[#FFB020]/10">
                 {status}
               </span>
+              {job.source && <span className="text-[#2DD4BF]">via {job.source}</span>}
             </div>
 
             <h1 className="text-3xl md:text-4xl font-display font-bold">

@@ -17,7 +17,7 @@ export default function JobCard({ job }) {
           <div className="flex items-center gap-3 flex-wrap">
             <h3 className="text-xl font-bold text-[#F5F3EE]">{job.title}</h3>
             <span
-              className={"font-mono text-[11px] tracking-wider px-2 py-0.5 rounded border " + statusStyles[status]}
+              className={`font-mono text-[11px] tracking-wider px-2 py-0.5 rounded border ${statusStyles[status]}`}
             >
               {status}
             </span>
@@ -26,6 +26,9 @@ export default function JobCard({ job }) {
           <p className="text-[#8A8F9C] mt-2 font-mono text-sm">
             {job.company} - {job.location} - {job.type}
           </p>
+          {job.source && (
+            <p className="text-[#2DD4BF] mt-1 font-mono text-xs">via {job.source}</p>
+          )}
 
           <div className="flex flex-wrap gap-2 mt-3">
             {job.tags.map((tag) => (
@@ -43,7 +46,7 @@ export default function JobCard({ job }) {
           <span className="font-mono text-sm text-[#FFB020]">{job.salary}</span>
           <div className="flex gap-2">
             <Link
-              to={"/job/" + job.id}
+              to={`/job/${job.id}`}
               className="px-4 py-2 rounded-lg border border-[#1E2330] text-[#F5F3EE] hover:border-[#2DD4BF] transition text-sm"
             >
               View

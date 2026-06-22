@@ -1,34 +1,68 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { fetchJobs } from "../services/jobsApi";
+import { fetchJSearchJobs } from "../services/jsearchApi";
+import { fetchJobs as fetchAdzunaJobs } from "../services/jobsApi";
 import { jobs as demoJobs } from "../data/jobs";
 
 const JobsContext = createContext(null);
-const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const REFRESH_INTERVAL = 5 * 60 * 1000;
+const ADZUNA_RESULTS_PER_PAGE = 20;
+const MAX_PAGES = 5;
+const FULL_PAGE_THRESHOLD = 5;
 
 export function JobsProvider({ children }) {
   const [jobs, setJobs] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [isDemo, setIsDemo] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+
   const lastQueryRef = useRef({ what: "software developer", where: "india" });
+  const pageRef = useRef(1);
+  const providerRef = useRef("jsearch");
 
   const search = useCallback(async (query) => {
     setLoading(true);
     setError("");
     const merged = Object.assign({ what: "software developer", where: "india" }, query || {});
     lastQueryRef.current = merged;
+    pageRef.current = 1;
 
+    // 1) Try JSearch first (primary - real multi-portal data)
     try {
-      const result = await fetchJobs(merged);
+      const result = await fetchJSearchJobs(Object.assign({}, merged, { page: 1 }));
+      providerRef.current = "jsearch";
       setJobs(result.jobs);
       setTotalCount(result.count);
+      setHasMore(result.jobs.length >= FULL_PAGE_THRESHOLD);
       setIsDemo(false);
       setLastUpdated(new Date());
-    } catch (err) {
+      setLoading(false);
+      return;
+    } catch (jsearchErr) {
+      // fall through to Adzuna
+    }
+
+    // 2) Try Adzuna as backup
+    try {
+      const result = await fetchAdzunaJobs(
+        Object.assign({}, merged, { page: 1, resultsPerPage: ADZUNA_RESULTS_PER_PAGE })
+      );
+      providerRef.current = "adzuna";
+      setJobs(result.jobs);
+      setTotalCount(result.count);
+      setHasMore(result.jobs.length >= FULL_PAGE_THRESHOLD);
+      setIsDemo(false);
+      setLastUpdated(new Date());
+      setLoading(false);
+      return;
+    } catch (adzunaErr) {
+      // 3) Fall back to local demo data
+      providerRef.current = "demo";
       const keyword = (merged.what || "").toLowerCase();
-      const fallback = keyword
+      const filtered = keyword
         ? demoJobs.filter((job) =>
             (job.title + " " + job.company + " " + job.tags.join(" "))
               .toLowerCase()
@@ -36,16 +70,54 @@ export function JobsProvider({ children }) {
           )
         : demoJobs;
 
-      const finalFallback = fallback.length ? fallback : demoJobs;
+      const finalFallback = (filtered.length ? filtered : demoJobs).map((job) =>
+        Object.assign({}, job, { source: job.source || "Demo Listing" })
+      );
+
       setJobs(finalFallback);
       setTotalCount(finalFallback.length);
+      setHasMore(false);
       setIsDemo(true);
-      setError(err.message || "Could not reach the live job feed.");
+      setError(adzunaErr.message || "Could not reach any live job feed.");
       setLastUpdated(new Date());
-    } finally {
       setLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || isDemo || !hasMore) return;
+    if (pageRef.current >= MAX_PAGES) {
+      setHasMore(false);
+      return;
+    }
+
+    setLoadingMore(true);
+    const nextPage = pageRef.current + 1;
+
+    try {
+      let result;
+      if (providerRef.current === "jsearch") {
+        result = await fetchJSearchJobs(
+          Object.assign({}, lastQueryRef.current, { page: nextPage })
+        );
+      } else {
+        result = await fetchAdzunaJobs(
+          Object.assign({}, lastQueryRef.current, {
+            page: nextPage,
+            resultsPerPage: ADZUNA_RESULTS_PER_PAGE,
+          })
+        );
+      }
+
+      pageRef.current = nextPage;
+      setJobs((prev) => prev.concat(result.jobs));
+      setHasMore(result.jobs.length >= FULL_PAGE_THRESHOLD && nextPage < MAX_PAGES);
+    } catch (err) {
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, isDemo, hasMore]);
 
   const refresh = useCallback(() => {
     search(lastQueryRef.current);
@@ -68,7 +140,21 @@ export function JobsProvider({ children }) {
 
   return (
     <JobsContext.Provider
-      value={{ jobs, totalCount, loading, error, isDemo, lastUpdated, search, refresh, getJobById }}
+      value={{
+        jobs,
+        totalCount,
+        loading,
+        loadingMore,
+        error,
+        isDemo,
+        lastUpdated,
+        hasMore,
+        search,
+        refresh,
+        loadMore,
+        getJobById,
+        provider: providerRef.current,
+      }}
     >
       {children}
     </JobsContext.Provider>

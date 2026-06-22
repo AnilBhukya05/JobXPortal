@@ -15,15 +15,24 @@ export default function Jobs() {
   const { portal } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { jobs, loading, error, isDemo, search } = useJobs();
+  const {
+    jobs,
+    loading,
+    loadingMore,
+    error,
+    isDemo,
+    hasMore,
+    search,
+    loadMore,
+  } = useJobs();
 
   const [days, setDays] = useState(30);
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [jobType, setJobType] = useState([]);
+  const [experience, setExperience] = useState([]);
   const [keyword, setKeyword] = useState(searchParams.get("q") || "");
 
   const whereLoc = searchParams.get("where") || "india";
-
   const portalMeta = portals.find((p) => p.slug === portal);
   const heading = portalMeta ? portalMeta.name : "All";
 
@@ -40,6 +49,13 @@ export default function Jobs() {
       if (remoteOnly && !job.remote) return false;
       if (jobType.length && !jobType.includes(job.type)) return false;
       if (
+        experience.length &&
+        job.experienceBucket &&
+        !experience.includes(job.experienceBucket) &&
+        job.experienceBucket !== "unknown"
+      )
+        return false;
+      if (
         keyword &&
         !(job.title + " " + job.company + " " + job.tags.join(" "))
           .toLowerCase()
@@ -48,11 +64,17 @@ export default function Jobs() {
         return false;
       return true;
     });
-  }, [jobs, days, remoteOnly, jobType, keyword]);
+  }, [jobs, days, remoteOnly, jobType, experience, keyword]);
 
   function handleSearchSubmit() {
     search({ what: keyword || "software developer", where: whereLoc });
   }
+
+  const activeFilterCount =
+    (days < 30 ? 1 : 0) +
+    (remoteOnly ? 1 : 0) +
+    jobType.length +
+    experience.length;
 
   return (
     <>
@@ -68,7 +90,7 @@ export default function Jobs() {
             Back
           </button>
 
-         <div className="flex items-center gap-2 font-mono text-xs tracking-widest text-[#8A8F9C] mb-2">
+          <div className="flex items-center gap-2 font-mono text-xs tracking-widest text-[#8A8F9C] mb-2">
             <Link to="/" className="hover:text-[#FFB020] transition">
               LIVE
             </Link>
@@ -86,9 +108,23 @@ export default function Jobs() {
               {whereLoc.toUpperCase()}
             </button>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-8">
+
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-2">
             {heading} Jobs
           </h1>
+
+          {!loading && (
+            <p className="text-[#8A8F9C] text-sm mb-8 font-mono">
+              Showing{" "}
+              <span className="text-[#FFB020]">{filtered.length}</span> of{" "}
+              {jobs.length} loaded results
+              {activeFilterCount > 0 && (
+                <span className="ml-2 text-[#2DD4BF]">
+                  ({activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active)
+                </span>
+              )}
+            </p>
+          )}
 
           <div className="mb-8 max-w-xl flex gap-3">
             <div className="flex-1">
@@ -112,17 +148,38 @@ export default function Jobs() {
               setRemoteOnly={setRemoteOnly}
               jobType={jobType}
               setJobType={setJobType}
+              experience={experience}
+              setExperience={setExperience}
             />
 
             <div className="md:col-span-3 space-y-4">
               {loading ? (
                 <JobsLoading label="Pulling live listings..." />
               ) : filtered.length === 0 ? (
-                <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-10 text-center text-[#8A8F9C]">
-                  No jobs match right now. Try widening your filters.
+                <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-10 text-center">
+                  <p className="text-[#8A8F9C] mb-3">No jobs match your filters.</p>
+                  <p className="text-[#5b606e] text-sm font-mono">
+                    Try widening experience range or clearing filters.
+                  </p>
                 </div>
               ) : (
-                filtered.map((job) => <JobCard key={job.id} job={job} />)
+                <>
+                  {filtered.map((job) => (
+                    <JobCard key={job.id} job={job} />
+                  ))}
+
+                  {hasMore && (
+                    <div className="flex justify-center pt-4">
+                      <button
+                        onClick={loadMore}
+                        disabled={loadingMore}
+                        className="px-6 py-3 rounded-xl border border-[#1E2330] text-[#F5F3EE] hover:border-[#FFB020] transition font-mono text-sm disabled:opacity-50"
+                      >
+                        {loadingMore ? "Loading more..." : "Load More Jobs"}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
