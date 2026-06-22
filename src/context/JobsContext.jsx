@@ -26,7 +26,7 @@ export function JobsProvider({ children }) {
   const search = useCallback(async (query) => {
     setLoading(true);
     setError("");
-    const merged = Object.assign({ what: "software developer", where: "india" }, query || {});
+    const merged = Object.assign({ what: "jobs", where: "india" }, query || {});
     lastQueryRef.current = merged;
     pageRef.current = 1;
 

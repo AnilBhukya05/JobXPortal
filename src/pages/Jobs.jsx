@@ -30,6 +30,7 @@ export default function Jobs() {
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [jobType, setJobType] = useState([]);
   const [experience, setExperience] = useState([]);
+  const [category, setCategory] = useState("");
   const [keyword, setKeyword] = useState(searchParams.get("q") || "");
 
   const whereLoc = searchParams.get("where") || "india";
@@ -38,10 +39,20 @@ export default function Jobs() {
 
   useEffect(() => {
     const q = searchParams.get("q");
-    const what = q || (portalMeta && portalMeta.query.what) || "software developer";
+    const what = q || (portalMeta && portalMeta.query && portalMeta.query.what) || "jobs";
     search({ what, where: whereLoc });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [portal]);
+
+  // Re-search when category dropdown changes
+  useEffect(() => {
+    if (category !== "") {
+      search({ what: category, where: whereLoc });
+    } else {
+      search({ what: keyword || "jobs", where: whereLoc });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   const filtered = useMemo(() => {
     return jobs.filter((job) => {
@@ -67,14 +78,16 @@ export default function Jobs() {
   }, [jobs, days, remoteOnly, jobType, experience, keyword]);
 
   function handleSearchSubmit() {
-    search({ what: keyword || "software developer", where: whereLoc });
+    setCategory("");
+    search({ what: keyword || "jobs", where: whereLoc });
   }
 
   const activeFilterCount =
     (days < 30 ? 1 : 0) +
     (remoteOnly ? 1 : 0) +
     jobType.length +
-    experience.length;
+    experience.length +
+    (category ? 1 : 0);
 
   return (
     <>
@@ -101,7 +114,7 @@ export default function Jobs() {
             <span>/</span>
             <button
               onClick={() =>
-                search({ what: keyword || "software developer", where: "india" })
+                search({ what: keyword || "jobs", where: "india" })
               }
               className="hover:text-[#FFB020] transition"
             >
@@ -120,7 +133,8 @@ export default function Jobs() {
               {jobs.length} loaded results
               {activeFilterCount > 0 && (
                 <span className="ml-2 text-[#2DD4BF]">
-                  ({activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active)
+                  ({activeFilterCount} filter
+                  {activeFilterCount > 1 ? "s" : ""} active)
                 </span>
               )}
             </p>
@@ -150,6 +164,8 @@ export default function Jobs() {
               setJobType={setJobType}
               experience={experience}
               setExperience={setExperience}
+              category={category}
+              setCategory={setCategory}
             />
 
             <div className="md:col-span-3 space-y-4">
@@ -157,9 +173,11 @@ export default function Jobs() {
                 <JobsLoading label="Pulling live listings..." />
               ) : filtered.length === 0 ? (
                 <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-10 text-center">
-                  <p className="text-[#8A8F9C] mb-3">No jobs match your filters.</p>
+                  <p className="text-[#8A8F9C] mb-3">
+                    No jobs match your filters.
+                  </p>
                   <p className="text-[#5b606e] text-sm font-mono">
-                    Try widening experience range or clearing filters.
+                    Try a different category or clear your filters.
                   </p>
                 </div>
               ) : (

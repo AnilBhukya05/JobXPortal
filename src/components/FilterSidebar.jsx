@@ -7,6 +7,8 @@ export default function FilterSidebar({
   setJobType,
   experience,
   setExperience,
+  category,
+  setCategory,
 }) {
   const types = ["Full Time", "Part Time", "Contract"];
 
@@ -15,6 +17,24 @@ export default function FilterSidebar({
     { label: "Junior (1-2 years)", value: "junior" },
     { label: "Mid-level (2-5 years)", value: "mid" },
     { label: "Senior (5+ years)", value: "senior" },
+  ];
+
+  const categories = [
+    { label: "All Jobs", value: "" },
+    { label: "IT and Software", value: "software developer" },
+    { label: "Data and Analytics", value: "data analyst" },
+    { label: "Design and UX", value: "designer" },
+    { label: "Marketing", value: "marketing" },
+    { label: "Sales", value: "sales" },
+    { label: "Finance and Accounts", value: "finance accountant" },
+    { label: "HR and Recruitment", value: "human resources" },
+    { label: "Operations", value: "operations manager" },
+    { label: "Customer Support", value: "customer support" },
+    { label: "Teaching and Education", value: "teacher educator" },
+    { label: "Healthcare", value: "doctor nurse healthcare" },
+    { label: "Engineering (Non-IT)", value: "mechanical civil electrical engineer" },
+    { label: "Legal", value: "lawyer legal" },
+    { label: "Content and Writing", value: "content writer" },
   ];
 
   return (
@@ -29,11 +49,30 @@ export default function FilterSidebar({
             setRemoteOnly(false);
             setJobType([]);
             setExperience([]);
+            setCategory("");
           }}
           className="font-mono text-[10px] text-[#8A8F9C] hover:text-[#fb7185] transition tracking-wider"
         >
           CLEAR ALL
         </button>
+      </div>
+
+      {/* CATEGORY */}
+      <div className="mb-6">
+        <label className="text-sm text-[#F5F3EE] block mb-2">
+          Job Category
+        </label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full bg-[#0B0E14] border border-[#1E2330] rounded-lg px-3 py-2.5 text-sm text-[#F5F3EE] outline-none focus:border-[#FFB020] transition-colors"
+        >
+          {categories.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* POSTED WITHIN */}
