@@ -1,7 +1,7 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SplitFlap from "../components/SplitFlap";
-import anilPhoto from "../assets/anil.jpg";
+// import anilPhoto from "../assets/anil.jpg";
 import {
   Radar,
   Layers,
@@ -187,13 +187,20 @@ export default function About() {
 
           <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-8 md:p-10">
             <div className="flex flex-col md:flex-row gap-8 items-start">
+
               {/* AVATAR */}
-              <div className="shrink-0">
+              {/* <div className="shrink-0">
                 <img
                   src={anilPhoto}
                   alt="Anil Bhukya"
                   className="w-28 h-36 rounded-2xl object-cover object-top border-2 border-[#FFB020]/30"
                 />
+              </div> */}
+              
+              <div className="shrink-0">
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#FFB020] to-[#2DD4BF] flex items-center justify-center text-4xl font-display font-bold text-[#0B0E14]">
+                  A
+                </div>
               </div>
 
               {/* INFO */}
