@@ -14,6 +14,9 @@ import { timeAgo } from "../utils/time";
 import { useJobs } from "../context/JobsContext";
 import { portals } from "../data/portals";
 
+import { useBookmarkContext } from "../context/BookmarkContext";
+import { Clock } from "lucide-react";
+
 export default function Home() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
@@ -28,6 +31,8 @@ export default function Home() {
     refresh,
   } = useJobs();
 
+  const { recent } = useBookmarkContext();
+
   const uniqueCompanies = new Set(jobs.map((j) => j.company)).size;
   const latest = [...jobs]
     .sort((a, b) => a.postedDaysAgo - b.postedDaysAgo)
@@ -41,8 +46,7 @@ export default function Home() {
     );
   }
 
-  // ANIMATED STATS
-  const { ref: statsRef, inView } = useInView({ triggerOnce: true, threshold: 0.4 });
+  const { ref: statsRef, inView } = useInView({ triggerOnce: true, threshold: 0.3 });
   const [displayedJobs, setDisplayedJobs] = useState(0);
   const [displayedCompanies, setDisplayedCompanies] = useState(0);
   const [displayedCategories, setDisplayedCategories] = useState(0);
@@ -84,22 +88,22 @@ export default function Home() {
       <Navbar />
 
       <div className="bg-[#0B0E14] text-[#F5F3EE] min-h-screen overflow-hidden relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[#FFB020]/5 blur-[180px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] md:w-[800px] h-[300px] md:h-[800px] bg-[#FFB020]/5 blur-[180px] rounded-full pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 relative">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 relative">
           {/* HERO */}
-          <section className="pt-24 pb-24">
+          <section className="pt-16 md:pt-24 pb-16 md:pb-24">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 border border-[#1E2330] bg-[#12151D] px-4 py-2 rounded-full mb-8 font-mono text-xs tracking-widest text-[#8A8F9C]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF] animate-pulse" />
-                LIVE BOARD - REAL LISTINGS, UPDATED ON EVERY SEARCH
+              <div className="inline-flex items-center gap-2 border border-[#1E2330] bg-[#12151D] px-3 md:px-4 py-2 rounded-full mb-6 md:mb-8 font-mono text-[10px] md:text-xs tracking-widest text-[#8A8F9C]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF] animate-pulse shrink-0" />
+                LIVE BOARD - UPDATED ON EVERY SEARCH
               </div>
 
-              <h1 className="font-display text-6xl md:text-8xl font-bold tracking-tight leading-[0.95]">
+              <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95]">
                 Now boarding:
                 <br />
                 <SplitFlap
@@ -113,32 +117,32 @@ export default function Home() {
                 />
               </h1>
 
-              <p className="text-[#8A8F9C] text-xl mt-8 max-w-2xl">
-                Real jobs, pulled live every time you search. No more checking
-                six tabs before breakfast.
+              <p className="text-[#8A8F9C] text-base md:text-xl mt-6 md:mt-8 max-w-2xl">
+                Real jobs from across the web, updated live — pulled
+                live every time you search.
               </p>
 
               <form
                 onSubmit={handleSearch}
-                className="mt-12 bg-[#12151D] border border-[#1E2330] rounded-3xl p-3 flex flex-col md:flex-row gap-3"
+                className="mt-8 md:mt-12 bg-[#12151D] border border-[#1E2330] rounded-2xl md:rounded-3xl p-3 flex flex-col gap-2"
               >
                 <input
                   type="text"
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   placeholder="Job title, skill or company"
-                  className="flex-1 bg-transparent px-5 py-4 outline-none text-[#F5F3EE] placeholder:text-[#5b606e]"
+                  className="w-full bg-transparent px-4 py-3 outline-none text-[#F5F3EE] placeholder:text-[#5b606e] text-sm"
                 />
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Location (e.g. Bangalore, India)"
-                  className="flex-1 bg-transparent px-5 py-4 outline-none text-[#F5F3EE] placeholder:text-[#5b606e]"
+                  placeholder="Location (e.g. Bangalore)"
+                  className="w-full bg-transparent px-4 py-3 outline-none text-[#F5F3EE] placeholder:text-[#5b606e] text-sm border-t border-[#1E2330]"
                 />
                 <button
                   type="submit"
-                  className="bg-[#FFB020] text-[#0B0E14] px-8 py-4 rounded-2xl font-semibold hover:bg-[#ffc454] transition"
+                  className="cursor-pointer w-full bg-[#FFB020] text-[#0B0E14] px-6 py-3 rounded-xl font-semibold hover:bg-[#ffc454] transition text-sm"
                 >
                   Search
                 </button>
@@ -147,14 +151,14 @@ export default function Home() {
           </section>
 
           {/* STATS */}
-          <section ref={statsRef} className="grid md:grid-cols-3 gap-6 mt-4">
+          <section ref={statsRef} className="grid grid-cols-3 gap-3 md:gap-6 mt-4">
             {[
               {
                 label: "Jobs Found",
                 value: loading ? "..." : displayedJobs.toLocaleString(),
               },
               {
-                label: "Companies This Page",
+                label: "Companies",
                 value: loading ? "..." : displayedCompanies,
               },
               { label: "Categories", value: displayedCategories },
@@ -162,12 +166,12 @@ export default function Home() {
               <motion.div
                 key={stat.label}
                 whileHover={{ y: -4 }}
-                className="bg-[#12151D] border border-[#1E2330] rounded-3xl p-8 hover:border-[#FFB020]/40 transition-all duration-300"
+                className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-4 md:p-8 hover:border-[#FFB020]/40 transition-all duration-300"
               >
-                <h2 className="font-mono text-6xl font-bold text-[#F5F3EE]">
+                <h2 className="font-mono text-2xl sm:text-4xl md:text-6xl font-bold text-[#F5F3EE]">
                   {stat.value}
                 </h2>
-                <p className="text-[#8A8F9C] mt-3 font-mono uppercase tracking-wider text-sm">
+                <p className="text-[#8A8F9C] mt-2 font-mono uppercase tracking-wider text-[10px] md:text-sm">
                   {stat.label}
                 </p>
               </motion.div>
@@ -175,39 +179,42 @@ export default function Home() {
           </section>
 
           {/* SOURCES */}
-          <section className="mt-32">
+          <section className="mt-20 md:mt-32">
             <p className="font-mono text-xs tracking-widest text-[#8A8F9C] mb-2">
               BROWSE BY CATEGORY
             </p>
-            <h2 className="text-5xl font-display font-bold mb-12">Sources</h2>
+            <h2 className="text-3xl md:text-5xl font-display font-bold mb-8 md:mb-12">
+              Sources
+            </h2>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {portals.map((portal) => (
-                <PortalCard key={portal.slug} portal={portal} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 w-full">
+              {portals.map((portal, index) => (
+                <PortalCard key={portal.slug} portal={portal} index={index} />
               ))}
             </div>
           </section>
 
           {/* LATEST JOBS */}
-          <section className="mt-32 pb-32">
+          <section className="mt-20 md:mt-32 pb-20 md:pb-32">
             <p className="font-mono text-xs tracking-widest text-[#8A8F9C] mb-2">
               JUST LANDED
             </p>
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-12">
-              <h2 className="text-5xl font-display font-bold">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-5xl font-display font-bold">
                 Latest Opportunities
               </h2>
               <button
                 onClick={refresh}
-                className="flex items-center gap-2 font-mono text-xs text-[#8A8F9C] hover:text-[#FFB020] transition border border-[#1E2330] rounded-full px-4 py-2"
+                className="flex items-center gap-2 font-mono text-xs text-[#8A8F9C] hover:text-[#FFB020] transition border border-[#1E2330] rounded-full px-3 md:px-4 py-2"
               >
                 <RefreshCw
-                  size={14}
+                  size={13}
                   className={loading ? "animate-spin" : ""}
                 />
-                {lastUpdated
-                  ? "Updated " + timeAgo(lastUpdated)
-                  : "Updating..."}
+                <span className="hidden sm:inline">
+                  {lastUpdated ? "Updated " + timeAgo(lastUpdated) : "Updating..."}
+                </span>
+                <span className="sm:hidden">Refresh</span>
               </button>
             </div>
 
@@ -216,7 +223,7 @@ export default function Home() {
             {loading ? (
               <JobsLoading label="Pulling live listings..." />
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-3 md:space-y-5">
                 {latest.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
@@ -225,6 +232,27 @@ export default function Home() {
           </section>
         </div>
 
+
+        {/* RECENTLY VIEWED */}
+          {recent.length > 0 && (
+            <section className="mt-20 md:mt-32 pb-12">
+              <p className="font-mono text-xs tracking-widest text-[var(--muted)] mb-2">
+                RECENTLY VIEWED
+              </p>
+              <div className="flex items-center gap-3 mb-8">
+                <h2 className="text-3xl md:text-4xl font-display font-bold">
+                  Pick up where you left off
+                </h2>
+                <Clock size={24} className="text-[var(--muted)]" />
+              </div>
+              <div className="space-y-3 md:space-y-4">
+                {recent.slice(0, 4).map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+            </section>
+          )}
+          
         <Footer />
       </div>
     </>

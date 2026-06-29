@@ -27,9 +27,9 @@ export default function ScrollToTopButton() {
           transition={{ duration: 0.25 }}
           onClick={scrollUp}
           aria-label="Scroll to top"
-          className="cursor-pointer fixed bottom-7 right-7 z-50 w-12 h-12 rounded-full bg-[#FFB020] text-[#0B0E14] flex items-center justify-center shadow-lg hover:bg-[#ffc454] hover:-translate-y-1 transition-all duration-300"
+          className="fixed bottom-5 right-4 md:bottom-7 md:right-7 z-50 w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#FFB020] text-[#0B0E14] flex items-center justify-center shadow-lg hover:bg-[#ffc454] hover:-translate-y-1 transition-all duration-300"
         >
-          <ArrowUp size={20} />
+          <ArrowUp size={18} />
         </motion.button>
       )}
     </AnimatePresence>

@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
+
 export default function FilterSidebar({
   days,
   setDays,
@@ -10,13 +13,15 @@ export default function FilterSidebar({
   category,
   setCategory,
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const types = ["Full Time", "Part Time", "Contract"];
 
   const experienceOptions = [
-    { label: "Fresher (0-1 years)", value: "fresher" },
-    { label: "Junior (1-2 years)", value: "junior" },
-    { label: "Mid-level (2-5 years)", value: "mid" },
-    { label: "Senior (5+ years)", value: "senior" },
+    { label: "Fresher (0-1 yrs)", value: "fresher" },
+    { label: "Junior (1-2 yrs)", value: "junior" },
+    { label: "Mid-level (2-5 yrs)", value: "mid" },
+    { label: "Senior (5+ yrs)", value: "senior" },
   ];
 
   const categories = [
@@ -37,20 +42,30 @@ export default function FilterSidebar({
     { label: "Content and Writing", value: "content writer" },
   ];
 
-  return (
-    <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-6 h-fit md:sticky md:top-28">
-      <div className="flex items-center justify-between mb-5">
+  function clearAll() {
+    setDays(30);
+    setRemoteOnly(false);
+    setJobType([]);
+    setExperience([]);
+    setCategory("");
+    setMobileOpen(false);
+  }
+
+  const activeCount =
+    (days < 30 ? 1 : 0) +
+    (remoteOnly ? 1 : 0) +
+    jobType.length +
+    experience.length +
+    (category ? 1 : 0);
+
+  const filterContent = (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <h2 className="font-mono text-xs tracking-widest text-[#8A8F9C]">
           FILTERS
         </h2>
         <button
-          onClick={() => {
-            setDays(30);
-            setRemoteOnly(false);
-            setJobType([]);
-            setExperience([]);
-            setCategory("");
-          }}
+          onClick={clearAll}
           className="font-mono text-[10px] text-[#8A8F9C] hover:text-[#fb7185] transition tracking-wider"
         >
           CLEAR ALL
@@ -58,7 +73,7 @@ export default function FilterSidebar({
       </div>
 
       {/* CATEGORY */}
-      <div className="mb-6">
+      <div>
         <label className="text-sm text-[#F5F3EE] block mb-2">
           Job Category
         </label>
@@ -76,7 +91,7 @@ export default function FilterSidebar({
       </div>
 
       {/* POSTED WITHIN */}
-      <div className="mb-6">
+      <div>
         <label className="text-sm text-[#F5F3EE] block mb-2">
           Added to feed within
         </label>
@@ -93,7 +108,7 @@ export default function FilterSidebar({
       </div>
 
       {/* JOB TYPE */}
-      <div className="mb-6">
+      <div>
         <label className="text-sm text-[#F5F3EE] block mb-3">Job type</label>
         <div className="flex flex-col gap-2.5">
           {types.map((type) => (
@@ -120,7 +135,7 @@ export default function FilterSidebar({
       </div>
 
       {/* EXPERIENCE */}
-      <div className="mb-6">
+      <div>
         <label className="text-sm text-[#F5F3EE] block mb-3">Experience</label>
         <div className="flex flex-col gap-2.5">
           {experienceOptions.map((opt) => (
@@ -151,17 +166,68 @@ export default function FilterSidebar({
         <span className="text-sm text-[#F5F3EE]">Remote only</span>
         <div
           onClick={() => setRemoteOnly((r) => !r)}
-          className={`relative w-10 h-5 rounded-full transition-colors duration-300 cursor-pointer ${
-            remoteOnly ? "bg-[#2DD4BF]" : "bg-[#1E2330]"
-          }`}
+          className={"relative w-10 h-5 rounded-full transition-colors duration-300 cursor-pointer " + (remoteOnly ? "bg-[#2DD4BF]" : "bg-[#1E2330]")}
         >
           <span
-            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-300 ${
-              remoteOnly ? "translate-x-5" : "translate-x-0"
-            }`}
+            className={"absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-300 " + (remoteOnly ? "translate-x-5" : "translate-x-0")}
           />
         </div>
       </label>
     </div>
+  );
+
+  return (
+    <>
+      {/* MOBILE FILTER BUTTON */}
+      <div className="md:hidden mb-4">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#1E2330] text-[#F5F3EE] font-mono text-sm"
+        >
+          <SlidersHorizontal size={16} />
+          Filters
+          {activeCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-[#FFB020] text-[#0B0E14] text-xs font-bold flex items-center justify-center">
+              {activeCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* MOBILE DRAWER */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-[#12151D] border-t border-[#1E2330] rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <span className="font-mono text-xs tracking-widest text-[#8A8F9C]">
+                FILTERS
+              </span>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="text-[#8A8F9C] hover:text-[#F5F3EE]"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            {filterContent}
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="w-full mt-6 py-3 rounded-xl bg-[#FFB020] text-[#0B0E14] font-semibold"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden md:block bg-[#12151D] border border-[#1E2330] rounded-2xl p-6 h-fit md:sticky md:top-28">
+        {filterContent}
+      </div>
+    </>
   );
 }

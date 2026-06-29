@@ -44,7 +44,6 @@ export default function Jobs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [portal]);
 
-  // Re-search when category dropdown changes
   useEffect(() => {
     if (category !== "") {
       search({ what: category, where: whereLoc });
@@ -94,59 +93,54 @@ export default function Jobs() {
       <Navbar />
 
       <div className="bg-[#0B0E14] min-h-screen text-[#F5F3EE]">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 font-mono text-sm text-[#8A8F9C] hover:text-[#FFB020] transition mb-6"
+            className="inline-flex items-center gap-2 font-mono text-sm text-[#8A8F9C] hover:text-[#FFB020] transition mb-4 md:mb-6"
           >
             <ArrowLeft size={16} />
             Back
           </button>
 
           <div className="flex items-center gap-2 font-mono text-xs tracking-widest text-[#8A8F9C] mb-2">
-            <Link to="/" className="hover:text-[#FFB020] transition">
-              LIVE
-            </Link>
+            <Link to="/" className="hover:text-[#FFB020] transition">LIVE</Link>
             <span>/</span>
             <Link to="/jobs" className="hover:text-[#FFB020] transition">
               {heading.toUpperCase()}
             </Link>
             <span>/</span>
             <button
-              onClick={() =>
-                search({ what: keyword || "jobs", where: "india" })
-              }
+              onClick={() => search({ what: keyword || "jobs", where: "india" })}
               className="hover:text-[#FFB020] transition"
             >
               {whereLoc.toUpperCase()}
             </button>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-2">
+          <h1 className="text-3xl md:text-5xl font-display font-bold mb-2">
             {heading} Jobs
           </h1>
 
           {!loading && (
-            <p className="text-[#8A8F9C] text-sm mb-8 font-mono">
+            <p className="text-[#8A8F9C] text-xs md:text-sm mb-6 md:mb-8 font-mono">
               Showing{" "}
               <span className="text-[#FFB020]">{filtered.length}</span> of{" "}
-              {jobs.length} loaded results
+              {jobs.length} loaded
               {activeFilterCount > 0 && (
                 <span className="ml-2 text-[#2DD4BF]">
-                  ({activeFilterCount} filter
-                  {activeFilterCount > 1 ? "s" : ""} active)
+                  ({activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""})
                 </span>
               )}
             </p>
           )}
 
-          <div className="mb-8 max-w-xl flex gap-3">
+          <div className="flex gap-2 md:gap-3 mb-6 md:mb-8">
             <div className="flex-1">
               <SearchBar keyword={keyword} setKeyword={setKeyword} />
             </div>
             <button
               onClick={handleSearchSubmit}
-              className="px-6 rounded-xl bg-[#FFB020] text-[#0B0E14] font-semibold text-sm shrink-0"
+              className="px-4 md:px-6 rounded-xl bg-[#FFB020] text-[#0B0E14] font-semibold text-sm shrink-0"
             >
               Search
             </button>
@@ -154,7 +148,7 @@ export default function Jobs() {
 
           {isDemo && <DemoBanner message={error} />}
 
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="md:grid md:grid-cols-4 md:gap-6">
             <FilterSidebar
               days={days}
               setDays={setDays}
@@ -168,14 +162,12 @@ export default function Jobs() {
               setCategory={setCategory}
             />
 
-            <div className="md:col-span-3 space-y-4">
+            <div className="md:col-span-3 space-y-3 md:space-y-4">
               {loading ? (
                 <JobsLoading label="Pulling live listings..." />
               ) : filtered.length === 0 ? (
-                <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-10 text-center">
-                  <p className="text-[#8A8F9C] mb-3">
-                    No jobs match your filters.
-                  </p>
+                <div className="bg-[#12151D] border border-[#1E2330] rounded-2xl p-8 md:p-10 text-center">
+                  <p className="text-[#8A8F9C] mb-3">No jobs match your filters.</p>
                   <p className="text-[#5b606e] text-sm font-mono">
                     Try a different category or clear your filters.
                   </p>
