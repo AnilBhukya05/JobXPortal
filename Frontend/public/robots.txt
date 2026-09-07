@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jobxportal.vercel.app/sitemap.xml
