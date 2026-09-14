@@ -46,10 +46,22 @@ const SALARY_DATA = [
 
 const CITIES = ["All Cities", "Bangalore", "Hyderabad", "Mumbai", "Pune"];
 const LEVELS = ["fresher", "junior", "mid", "senior"];
-const LEVEL_LABELS = { fresher: "Fresher", junior: "Junior", mid: "Mid-level", senior: "Senior" };
-const LEVEL_COLORS = { fresher: "#10B981", junior: "#2DD4BF", mid: "#FFB020", senior: "#a78bfa" };
 
-const RANK_COLORS = ["#00FFB3", "#2DD4BF", "#FFB020"];
+const LEVEL_LABELS = {
+  fresher: "Fresher",
+  junior: "Junior",
+  mid: "Mid-level",
+  senior: "Senior",
+};
+
+const LEVEL_COLORS = {
+  fresher: "#10B981",
+  junior: "#2DD4BF",
+  mid: "#F59E0B",
+  senior: "#8B5CF6",
+};
+
+const RANK_COLORS = ["#4F46E5", "#2DD4BF", "#F59E0B"];
 
 function avgOf([min, max]) {
   return (min + max) / 2;
@@ -65,88 +77,261 @@ export default function SalaryInsights() {
   const ranked = useMemo(() => {
     const filtered = SALARY_DATA.filter((d) => {
       if (city !== "All Cities" && d.city !== city) return false;
-      if (search && !(d.role + " " + d.city).toLowerCase().includes(search.toLowerCase())) return false;
+      if (
+        search &&
+        !(d.role + " " + d.city)
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      )
+        return false;
+
       return true;
     });
-    return [...filtered].sort((a, b) => avgOf(b[level]) - avgOf(a[level]));
+
+    return [...filtered].sort(
+      (a, b) => avgOf(b[level]) - avgOf(a[level])
+    );
   }, [search, city, level]);
 
-  const globalMax = Math.max(...ranked.map((d) => d[level][1]), 1);
+  const globalMax = Math.max(
+    ...ranked.map((d) => d[level][1]),
+    1
+  );
 
   return (
     <>
       <Navbar />
-      <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
-        <div style={{ maxWidth: 880, margin: "0 auto", padding: "32px 24px 64px" }}>
 
-          <button onClick={() => navigate(-1)} style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: "JetBrains Mono", fontSize: 12, color: "var(--muted)",
-            background: "none", border: "none", cursor: "pointer", marginBottom: 24,
-            letterSpacing: "0.08em",
-          }}>
+      <div
+        style={{
+          background: "#F8FAFF",
+          minHeight: "100vh",
+          color: "#0B132B",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 880,
+            margin: "0 auto",
+            padding: "32px 24px 64px",
+          }}
+        >
+          {/* BACK */}
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "JetBrains Mono",
+              fontSize: 12,
+              color: "#64748B",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              marginBottom: 24,
+              letterSpacing: "0.08em",
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#4F46E5";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#64748B";
+            }}
+          >
             <ArrowLeft size={14} /> Back
           </button>
 
-          <p style={{ fontFamily: "JetBrains Mono", fontSize: 11, letterSpacing: "0.1em", color: "var(--muted)", textTransform: "uppercase", marginBottom: 8 }}>
+          {/* HEADER */}
+          <p
+            style={{
+              fontFamily: "JetBrains Mono",
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              color: "#64748B",
+              textTransform: "uppercase",
+              marginBottom: 8,
+            }}
+          >
             SALARY INSIGHTS
           </p>
-          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, marginBottom: 8 }}>
+
+          <h1
+            style={{
+              fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+              fontWeight: 800,
+              marginBottom: 8,
+              color: "#0B132B",
+              letterSpacing: "-0.03em",
+            }}
+          >
             Who's earning the most right now
           </h1>
-          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 28, maxWidth: 560, lineHeight: 1.7 }}>
-            Ranked by average pay at the experience level you pick below. Figures are in LPA (Lakhs Per Annum), based on industry surveys — your actual offer will always come down to the specific company and how well you negotiate.
+
+          <p
+            style={{
+              color: "#64748B",
+              fontSize: 14,
+              marginBottom: 28,
+              maxWidth: 560,
+              lineHeight: 1.7,
+            }}
+          >
+            Ranked by average pay at the experience level you pick below.
+            Figures are in LPA (Lakhs Per Annum), based on industry surveys —
+            your actual offer will always come down to the specific company
+            and how well you negotiate.
           </p>
 
           {/* FILTERS */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 10,
+              marginBottom: 8,
+            }}
+          >
+            {/* SEARCH */}
             <div style={{ position: "relative" }}>
-              <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+              <Search
+                size={14}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#94A3B8",
+                }}
+              />
+
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search a role..."
                 style={{
-                  paddingLeft: 34, paddingRight: 14, paddingTop: 10, paddingBottom: 10,
-                  background: "var(--surface)", border: "1px solid var(--border)",
-                  borderRadius: 10, color: "var(--text)",
-                  fontFamily: "Poppins", fontSize: 13, outline: "none", width: 200,
+                  paddingLeft: 34,
+                  paddingRight: 14,
+                  paddingTop: 10,
+                  paddingBottom: 10,
+                  background: "#FFFFFF",
+                  border: "1px solid #E2E6F0",
+                  borderRadius: 10,
+                  color: "#0B132B",
+                  fontFamily: "Poppins",
+                  fontSize: 13,
+                  outline: "none",
+                  width: 200,
+                  boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
+                  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "#4F46E5";
+                  e.currentTarget.style.boxShadow =
+                    "0 0 0 3px rgba(79, 70, 229, 0.08)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "#E2E6F0";
+                  e.currentTarget.style.boxShadow =
+                    "0 2px 8px rgba(15, 23, 42, 0.03)";
                 }}
               />
             </div>
 
-            <select value={city} onChange={(e) => setCity(e.target.value)} style={{
-              padding: "10px 14px", background: "var(--surface)",
-              border: "1px solid var(--border)", borderRadius: 10,
-              color: "var(--text)", fontFamily: "Poppins", fontSize: 13, outline: "none", cursor: "pointer",
-            }}>
-              {CITIES.map((c) => <option key={c}>{c}</option>)}
+            {/* CITY */}
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              style={{
+                padding: "10px 14px",
+                background: "#FFFFFF",
+                border: "1px solid #E2E6F0",
+                borderRadius: 10,
+                color: "#0B132B",
+                fontFamily: "Poppins",
+                fontSize: 13,
+                outline: "none",
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
+              }}
+            >
+              {CITIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
             </select>
 
+            {/* LEVELS */}
             <div style={{ display: "flex", gap: 6 }}>
               {LEVELS.map((l) => (
-                <button key={l} onClick={() => { setLevel(l); setExpanded(null); }} style={{
-                  padding: "8px 14px", borderRadius: 9,
-                  border: `1px solid ${level === l ? LEVEL_COLORS[l] : "var(--border)"}`,
-                  background: level === l ? LEVEL_COLORS[l] + "18" : "none",
-                  color: level === l ? LEVEL_COLORS[l] : "var(--muted)",
-                  fontFamily: "Poppins", fontSize: 12, fontWeight: 600,
-                  cursor: "pointer", transition: "all 0.15s",
-                }}>
+                <button
+                  key={l}
+                  onClick={() => {
+                    setLevel(l);
+                    setExpanded(null);
+                  }}
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: 9,
+                    border: `1px solid ${
+                      level === l ? LEVEL_COLORS[l] : "#E2E6F0"
+                    }`,
+                    background:
+                      level === l
+                        ? LEVEL_COLORS[l] + "14"
+                        : "#FFFFFF",
+                    color:
+                      level === l
+                        ? LEVEL_COLORS[l]
+                        : "#64748B",
+                    fontFamily: "Poppins",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                  }}
+                >
                   {LEVEL_LABELS[l]}
                 </button>
               ))}
             </div>
           </div>
 
-          <p style={{ fontFamily: "JetBrains Mono", fontSize: 11, color: "var(--muted)", marginBottom: 20 }}>
-            Showing {ranked.length} {ranked.length === 1 ? "role" : "roles"}, ranked by {LEVEL_LABELS[level].toLowerCase()} pay · tap a row to see its full ladder
+          {/* COUNT */}
+          <p
+            style={{
+              fontFamily: "JetBrains Mono",
+              fontSize: 11,
+              color: "#64748B",
+              marginBottom: 20,
+            }}
+          >
+            Showing {ranked.length}{" "}
+            {ranked.length === 1 ? "role" : "roles"}, ranked by{" "}
+            {LEVEL_LABELS[level].toLowerCase()} pay · tap a row to see its full
+            ladder
           </p>
 
           {/* LEADERBOARD */}
-          <div style={{ border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", background: "var(--surface)" }}>
+          <div
+            style={{
+              border: "1px solid #E2E6F0",
+              borderRadius: 16,
+              overflow: "hidden",
+              background: "#FFFFFF",
+              boxShadow: "0 8px 30px rgba(15, 23, 42, 0.05)",
+            }}
+          >
             {ranked.length === 0 && (
-              <div style={{ padding: "40px 24px", textAlign: "center", color: "var(--muted)", fontFamily: "Poppins", fontSize: 13 }}>
+              <div
+                style={{
+                  padding: "40px 24px",
+                  textAlign: "center",
+                  color: "#64748B",
+                  fontFamily: "Poppins",
+                  fontSize: 13,
+                }}
+              >
                 No roles match that search. Try a different keyword or city.
               </div>
             )}
@@ -154,98 +339,267 @@ export default function SalaryInsights() {
             {ranked.map((d, i) => {
               const [min, max] = d[level];
               const avg = avgOf([min, max]).toFixed(1);
-              const barPct = Math.max(6, (avg / globalMax) * 100);
-              const rankColor = RANK_COLORS[i] || "var(--muted)";
+              const barPct = Math.max(
+                6,
+                (avg / globalMax) * 100
+              );
+
+              const rankColor =
+                RANK_COLORS[i] || "#94A3B8";
+
               const isOpen = expanded === i;
               const key = d.role + d.city;
 
               return (
-                <div key={key} style={{ borderBottom: i < ranked.length - 1 ? "1px solid var(--border)" : "none" }}>
+                <div
+                  key={key}
+                  style={{
+                    borderBottom:
+                      i < ranked.length - 1
+                        ? "1px solid #E2E6F0"
+                        : "none",
+                  }}
+                >
                   <button
-                    onClick={() => setExpanded(isOpen ? null : i)}
+                    onClick={() =>
+                      setExpanded(isOpen ? null : i)
+                    }
                     style={{
-                      width: "100%", display: "flex", alignItems: "center", gap: 16,
-                      padding: "16px 20px", background: isOpen ? "var(--bg)" : "none",
-                      border: "none", cursor: "pointer", textAlign: "left",
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                      padding: "16px 20px",
+                      background: isOpen
+                        ? "#F8FAFF"
+                        : "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
                       transition: "background 0.15s",
                     }}
-                    onMouseEnter={(e) => { if (!isOpen) e.currentTarget.style.background = "var(--bg)"; }}
-                    onMouseLeave={(e) => { if (!isOpen) e.currentTarget.style.background = "none"; }}
+                    onMouseEnter={(e) => {
+                      if (!isOpen) {
+                        e.currentTarget.style.background =
+                          "#F8FAFF";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isOpen) {
+                        e.currentTarget.style.background =
+                          "transparent";
+                      }
+                    }}
                   >
                     {/* RANK */}
-                    <span style={{
-                      fontFamily: "JetBrains Mono", fontSize: 18, fontWeight: 700,
-                      color: rankColor, width: 32, flexShrink: 0, opacity: i < 3 ? 1 : 0.5,
-                    }}>
+                    <span
+                      style={{
+                        fontFamily: "JetBrains Mono",
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: rankColor,
+                        width: 32,
+                        flexShrink: 0,
+                        opacity: i < 3 ? 1 : 0.5,
+                      }}
+                    >
                       {String(i + 1).padStart(2, "0")}
                     </span>
 
                     {/* ROLE + BAR */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: "Poppins", fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 8,
+                          marginBottom: 6,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: "Poppins",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            color: "#0B132B",
+                          }}
+                        >
                           {d.role}
                         </span>
-                        <span style={{ fontFamily: "JetBrains Mono", fontSize: 11, color: "var(--muted)" }}>
+
+                        <span
+                          style={{
+                            fontFamily: "JetBrains Mono",
+                            fontSize: 11,
+                            color: "#64748B",
+                          }}
+                        >
                           {d.city}
                         </span>
                       </div>
-                      <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
-                        <div style={{
-                          height: "100%", width: barPct + "%",
-                          background: rankColor, borderRadius: 3,
-                          transition: "width 0.4s ease",
-                        }} />
+
+                      <div
+                        style={{
+                          height: 6,
+                          background: "#E2E6F0",
+                          borderRadius: 3,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "100%",
+                            width: barPct + "%",
+                            background: rankColor,
+                            borderRadius: 3,
+                            transition: "width 0.4s ease",
+                          }}
+                        />
                       </div>
                     </div>
 
                     {/* AVG */}
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontFamily: "JetBrains Mono", fontSize: 17, fontWeight: 700, color: "var(--text)" }}>
+                    <div
+                      style={{
+                        textAlign: "right",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "JetBrains Mono",
+                          fontSize: 17,
+                          fontWeight: 700,
+                          color: "#0B132B",
+                        }}
+                      >
                         ₹{avg}L
                       </div>
-                      <div style={{ fontFamily: "JetBrains Mono", fontSize: 9, color: "var(--muted)" }}>avg/yr</div>
+
+                      <div
+                        style={{
+                          fontFamily: "JetBrains Mono",
+                          fontSize: 9,
+                          color: "#94A3B8",
+                        }}
+                      >
+                        avg/yr
+                      </div>
                     </div>
 
-                    <ChevronDown size={16} style={{
-                      color: "var(--muted)", flexShrink: 0,
-                      transform: isOpen ? "rotate(180deg)" : "none",
-                      transition: "transform 0.2s",
-                    }} />
+                    <ChevronDown
+                      size={16}
+                      style={{
+                        color: "#94A3B8",
+                        flexShrink: 0,
+                        transform: isOpen
+                          ? "rotate(180deg)"
+                          : "none",
+                        transition: "transform 0.2s",
+                      }}
+                    />
                   </button>
 
                   {/* EXPANDED LADDER */}
                   {isOpen && (
-                    <div style={{ padding: "0 20px 22px 68px", background: "var(--bg)" }}>
-                      <div style={{ display: "flex", gap: 0, position: "relative", marginBottom: 16 }}>
+                    <div
+                      style={{
+                        padding: "0 20px 22px 68px",
+                        background: "#F8FAFF",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 0,
+                          position: "relative",
+                          marginBottom: 16,
+                        }}
+                      >
                         {LEVELS.map((l, li) => {
                           const [lMin, lMax] = d[l];
                           const active = l === level;
+
                           return (
-                            <div key={l} style={{ flex: 1, position: "relative", paddingTop: 4 }}>
+                            <div
+                              key={l}
+                              style={{
+                                flex: 1,
+                                position: "relative",
+                                paddingTop: 4,
+                              }}
+                            >
                               {li > 0 && (
-                                <div style={{
-                                  position: "absolute", top: 9, left: "-50%", width: "100%", height: 2,
-                                  background: "var(--border)",
-                                }} />
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: 9,
+                                    left: "-50%",
+                                    width: "100%",
+                                    height: 2,
+                                    background: "#E2E6F0",
+                                  }}
+                                />
                               )}
-                              <div style={{
-                                width: 10, height: 10, borderRadius: "50%",
-                                background: active ? LEVEL_COLORS[l] : "var(--border)",
-                                border: active ? `2px solid ${LEVEL_COLORS[l]}50` : "none",
-                                margin: "0 auto 10px", position: "relative", zIndex: 1,
-                              }} />
-                              <div style={{ textAlign: "center" }}>
-                                <div style={{
-                                  fontFamily: "JetBrains Mono", fontSize: 10, textTransform: "uppercase",
-                                  color: active ? LEVEL_COLORS[l] : "var(--muted)", marginBottom: 3, fontWeight: active ? 700 : 400,
-                                }}>
+
+                              <div
+                                style={{
+                                  width: 10,
+                                  height: 10,
+                                  borderRadius: "50%",
+                                  background: active
+                                    ? LEVEL_COLORS[l]
+                                    : "#CBD5E1",
+                                  border: active
+                                    ? `2px solid ${LEVEL_COLORS[l]}50`
+                                    : "none",
+                                  margin: "0 auto 10px",
+                                  position: "relative",
+                                  zIndex: 1,
+                                }}
+                              />
+
+                              <div
+                                style={{
+                                  textAlign: "center",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontFamily:
+                                      "JetBrains Mono",
+                                    fontSize: 10,
+                                    textTransform:
+                                      "uppercase",
+                                    color: active
+                                      ? LEVEL_COLORS[l]
+                                      : "#64748B",
+                                    marginBottom: 3,
+                                    fontWeight: active
+                                      ? 700
+                                      : 400,
+                                  }}
+                                >
                                   {LEVEL_LABELS[l]}
                                 </div>
-                                <div style={{
-                                  fontFamily: "JetBrains Mono", fontSize: 12, fontWeight: 600,
-                                  color: active ? "var(--text)" : "var(--muted)",
-                                }}>
+
+                                <div
+                                  style={{
+                                    fontFamily:
+                                      "JetBrains Mono",
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: active
+                                      ? "#0B132B"
+                                      : "#64748B",
+                                  }}
+                                >
                                   {lMin}–{lMax}L
                                 </div>
                               </div>
@@ -255,17 +609,39 @@ export default function SalaryInsights() {
                       </div>
 
                       <Link
-                        to={`/jobs?q=${encodeURIComponent(d.role)}&where=${encodeURIComponent(d.city.toLowerCase())}`}
+                        to={`/jobs?q=${encodeURIComponent(
+                          d.role
+                        )}&where=${encodeURIComponent(
+                          d.city.toLowerCase()
+                        )}`}
                         style={{
-                          display: "inline-flex", alignItems: "center", gap: 6,
-                          padding: "8px 16px", background: "var(--surface)",
-                          border: "1px solid var(--border)", borderRadius: 8,
-                          color: "var(--accent)", textDecoration: "none",
-                          fontFamily: "Poppins", fontSize: 12, fontWeight: 600,
-                          transition: "border-color 0.15s",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "8px 16px",
+                          background: "#FFFFFF",
+                          border: "1px solid #E2E6F0",
+                          borderRadius: 8,
+                          color: "#4F46E5",
+                          textDecoration: "none",
+                          fontFamily: "Poppins",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          transition:
+                            "border-color 0.15s, background 0.15s",
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.borderColor = "var(--accent)"}
-                        onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--border)"}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor =
+                            "#4F46E5";
+                          e.currentTarget.style.background =
+                            "#F4F3FF";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor =
+                            "#E2E6F0";
+                          e.currentTarget.style.background =
+                            "#FFFFFF";
+                        }}
                       >
                         Find {d.role} jobs in {d.city} →
                       </Link>
@@ -276,10 +652,22 @@ export default function SalaryInsights() {
             })}
           </div>
 
-          <p style={{ color: "var(--muted)", fontFamily: "JetBrains Mono", fontSize: 10, marginTop: 24, textAlign: "center", letterSpacing: "0.05em" }}>
-            Figures are approximate and vary by company, skills and negotiation.
+          {/* FOOTNOTE */}
+          <p
+            style={{
+              color: "#94A3B8",
+              fontFamily: "JetBrains Mono",
+              fontSize: 10,
+              marginTop: 24,
+              textAlign: "center",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Figures are approximate and vary by company, skills and
+            negotiation.
           </p>
         </div>
+
         <Footer />
       </div>
     </>

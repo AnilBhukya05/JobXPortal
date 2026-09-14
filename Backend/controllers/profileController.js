@@ -24,3 +24,30 @@ export async function saveProfile(req, res) {
     res.status(500).json({ message: "Failed to save profile", error: err.message });
   }
 }
+
+export async function getPublicProfile(req, res) {
+  try {
+    const profile = await Profile.findOne({ user: req.params.userId });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    const publicFields = {
+      name: profile.name,
+      headline: profile.headline,
+      about: profile.about,
+      photo: profile.photo,
+      skills: profile.skills,
+      experience: profile.experience,
+      educationDetails: profile.educationDetails,
+      projects: profile.projects,
+      languages: profile.languages,
+      available: profile.available,
+      linkedin: profile.linkedin,
+      github: profile.github,
+      portfolio: profile.portfolio,
+    };
+
+    res.json({ profile: publicFields });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load profile", error: err.message });
+  }
+}

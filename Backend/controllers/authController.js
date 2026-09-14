@@ -89,7 +89,8 @@ export async function resetPassword(req, res) {
     if (!token || !password) return res.status(400).json({ message: "Token and new password are required" });
     if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
 
-    const hashed = crypto.createHash("sha256").update(token).digest("hex");
+    const cleanToken = token.trim();
+    const hashed = crypto.createHash("sha256").update(cleanToken).digest("hex");
     const user = await User.findOne({
       resetPasswordToken: hashed,
       resetPasswordExpires: { $gt: Date.now() },
@@ -123,5 +124,19 @@ export async function verifyEmail(req, res) {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ message: "Failed to verify email", error: err.message });
+  }
+}
+
+export async function resendVerification(req, res) {
+  try {
+    if (req.user.isVerified) {
+      return res.json({ success: true, message: "Your email is already verified." });
+    }
+    const rawToken = req.user.generateVerificationToken();
+    await req.user.save();
+    sendVerificationEmail(req.user.email, req.user.name, rawToken);
+    res.json({ success: true, message: "Verification link sent." });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to resend verification", error: err.message });
   }
 }

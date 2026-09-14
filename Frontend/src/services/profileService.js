@@ -18,3 +18,11 @@ export async function saveProfileApi(payload) {
     throw new Error(err.message || "Failed to save profile.");
   }
 }
+
+export async function fetchPublicProfileApi(userId) {
+  try {
+    return await request(`/profile/public/${userId}`);
+  } catch (err) {
+    throw new Error(err.message || "Failed to load profile.");
+  }
+}

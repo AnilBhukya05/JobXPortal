@@ -25,3 +25,7 @@ export function forgotPasswordApi(email) {
 export function resetPasswordApi(token, password) {
   return request("/auth/reset-password", { method: "POST", body: JSON.stringify({ token, password }) });
 }
+
+export function resendVerificationApi() {
+  return request("/auth/resend-verification", { method: "POST" });
+}

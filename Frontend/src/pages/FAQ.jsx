@@ -76,39 +76,74 @@ const FAQ_SECTIONS = [
 
 function FAQItem({ q, a, isOpen, onToggle }) {
   return (
-    <div style={{
-      border: "1px solid var(--border)", borderRadius: 12,
-      background: "var(--surface)", overflow: "hidden",
-    }}>
+    <div
+      style={{
+        border: "1px solid #E2E6F0",
+        borderRadius: 12,
+        background: "#FFFFFF",
+        overflow: "hidden",
+        boxShadow: isOpen
+          ? "0 8px 24px rgba(15, 23, 42, 0.06)"
+          : "0 3px 12px rgba(15, 23, 42, 0.025)",
+        transition: "all 0.2s ease",
+      }}
+    >
       <button
         onClick={onToggle}
         style={{
-          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 12, padding: "16px 18px", background: "none", border: "none",
-          cursor: "pointer", textAlign: "left",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          padding: "16px 18px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
         }}
       >
-        <span style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: 14, color: "var(--text)" }}>
+        <span
+          style={{
+            fontFamily: "Poppins",
+            fontWeight: 700,
+            fontSize: 14,
+            color: "#0B132B",
+          }}
+        >
           {q}
         </span>
+
         <ChevronDown
           size={18}
           style={{
-            color: "var(--accent)", flexShrink: 0,
-            transform: isOpen ? "rotate(180deg)" : "none",
+            color: "#4F46E5",
+            flexShrink: 0,
+            transform: isOpen
+              ? "rotate(180deg)"
+              : "none",
             transition: "transform 0.2s",
           }}
         />
       </button>
-      <div style={{
-        maxHeight: isOpen ? 300 : 0,
-        overflow: "hidden",
-        transition: "max-height 0.25s ease",
-      }}>
-        <p style={{
-          fontFamily: "Poppins", fontSize: 13.5, color: "var(--muted)",
-          lineHeight: 1.7, padding: "0 18px 18px",
-        }}>
+
+      <div
+        style={{
+          maxHeight: isOpen ? 300 : 0,
+          overflow: "hidden",
+          transition: "max-height 0.25s ease",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "Poppins",
+            fontSize: 13.5,
+            color: "#64748B",
+            lineHeight: 1.7,
+            padding: "0 18px 18px",
+            margin: 0,
+          }}
+        >
           {a}
         </p>
       </div>
@@ -121,61 +156,172 @@ export default function FAQ() {
   const [openKey, setOpenKey] = useState(null);
 
   function toggle(key) {
-    setOpenKey((prev) => (prev === key ? null : key));
+    setOpenKey((prev) =>
+      prev === key ? null : key
+    );
   }
 
   return (
     <>
       <Navbar />
-      <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)", padding: "32px 24px 80px" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
-          <button onClick={() => navigate(-1)} style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: "JetBrains Mono", fontSize: 12, color: "var(--muted)",
-            background: "none", border: "none", cursor: "pointer", marginBottom: 24,
-            letterSpacing: "0.08em",
-          }}>
-            <ArrowLeft size={14} /> Back
+      <div
+        style={{
+          background: "#F8FAFF",
+          minHeight: "100vh",
+          color: "#0B132B",
+          padding: "32px 24px 80px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 760,
+            margin: "0 auto",
+          }}
+        >
+
+          {/* BACK */}
+
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "JetBrains Mono",
+              fontSize: 12,
+              color: "#64748B",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              marginBottom: 24,
+              letterSpacing: "0.08em",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color =
+                "#4F46E5")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                "#64748B")
+            }
+          >
+            <ArrowLeft size={14} />
+            Back
           </button>
 
-          <p style={{ fontFamily: "JetBrains Mono", fontSize: 11, letterSpacing: "0.1em", color: "var(--muted)", textTransform: "uppercase", marginBottom: 8 }}>
+          {/* HEADER */}
+
+          <p
+            style={{
+              fontFamily: "JetBrains Mono",
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              color: "#4F46E5",
+              textTransform: "uppercase",
+              marginBottom: 8,
+              fontWeight: 600,
+            }}
+          >
             HELP CENTER
           </p>
-          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 800, marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
-            <HelpCircle size={28} style={{ color: "var(--accent)" }} />
+
+          <h1
+            style={{
+              fontSize:
+                "clamp(1.8rem, 4vw, 2.6rem)",
+              fontWeight: 800,
+              marginBottom: 8,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              color: "#0B132B",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            <HelpCircle
+              size={28}
+              style={{
+                color: "#4F46E5",
+                flexShrink: 0,
+              }}
+            />
+
             Frequently Asked Questions
           </h1>
-          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 36 }}>
+
+          <p
+            style={{
+              color: "#64748B",
+              fontSize: 14,
+              marginBottom: 36,
+              lineHeight: 1.7,
+            }}
+          >
             Common questions from job seekers and employers. Can't find what you need? Reach out on the Contact page.
           </p>
 
-          {FAQ_SECTIONS.map((section, sIdx) => (
-            <div key={section.title} style={{ marginBottom: 36 }}>
-              <p style={{
-                fontFamily: "JetBrains Mono", fontSize: 11, letterSpacing: "0.1em",
-                color: "var(--accent)", textTransform: "uppercase", marginBottom: 14,
-              }}>
-                {section.title}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {section.items.map((item, iIdx) => {
-                  const key = `${sIdx}-${iIdx}`;
-                  return (
-                    <FAQItem
-                      key={key}
-                      q={item.q}
-                      a={item.a}
-                      isOpen={openKey === key}
-                      onToggle={() => toggle(key)}
-                    />
-                  );
-                })}
+          {/* FAQ SECTIONS */}
+
+          {FAQ_SECTIONS.map(
+            (section, sIdx) => (
+              <div
+                key={section.title}
+                style={{
+                  marginBottom: 36,
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily:
+                      "JetBrains Mono",
+                    fontSize: 11,
+                    letterSpacing: "0.1em",
+                    color: "#4F46E5",
+                    textTransform:
+                      "uppercase",
+                    marginBottom: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  {section.title}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection:
+                      "column",
+                    gap: 10,
+                  }}
+                >
+                  {section.items.map(
+                    (item, iIdx) => {
+                      const key = `${sIdx}-${iIdx}`;
+
+                      return (
+                        <FAQItem
+                          key={key}
+                          q={item.q}
+                          a={item.a}
+                          isOpen={
+                            openKey === key
+                          }
+                          onToggle={() =>
+                            toggle(key)
+                          }
+                        />
+                      );
+                    }
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
+
       <Footer />
     </>
   );

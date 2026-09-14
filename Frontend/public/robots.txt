@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
 
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /profile
+Disallow: /bookmarks
+Disallow: /tracker
+Disallow: /resume-match
+Disallow: /resume-builder
+Disallow: /interview-prep
+Disallow: /cover-letter
+Disallow: /employer/dashboard
+
 Sitemap: https://jobxportal.vercel.app/sitemap.xml

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Search, ExternalLink, Building2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -116,13 +117,28 @@ const COMPANIES = [
 ];
 
 const INDUSTRY_GROUPS = {
-  "All": null,
+  All: null,
   "IT Services": ["IT"],
   "Global Tech": ["Tech"],
-  "Startups": ["E-commerce", "FoodTech", "FinTech", "EdTech", "SaaS", "Quick Commerce", "Transport", "EV"],
+  Startups: [
+    "E-commerce",
+    "FoodTech",
+    "FinTech",
+    "EdTech",
+    "SaaS",
+    "Quick Commerce",
+    "Transport",
+    "EV",
+  ],
   "Banking & Finance": ["Banking", "Finance"],
-  "Consulting": ["Consulting"],
-  "Manufacturing": ["Automotive", "Manufacturing", "FMCG", "Pharma", "Conglomerate"],
+  Consulting: ["Consulting"],
+  Manufacturing: [
+    "Automotive",
+    "Manufacturing",
+    "FMCG",
+    "Pharma",
+    "Conglomerate",
+  ],
 };
 
 function CompanyLogo({ name, domain }) {
@@ -136,111 +152,207 @@ function CompanyLogo({ name, domain }) {
 
   if (srcIndex >= sources.length) {
     return (
-      <div style={{
-        width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-        background: "linear-gradient(135deg, var(--accent)25, var(--teal)25)",
-        border: "1px solid var(--border)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "Poppins", fontWeight: 800, fontSize: 18,
-        color: "var(--accent)",
-      }}>
+      <motion.div
+        whileHover={{ scale: 1.08, rotate: 2 }}
+        transition={{ duration: 0.2 }}
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          flexShrink: 0,
+          background: "linear-gradient(135deg, #EEF2FF, #ECFDF5)",
+          border: "1px solid #D9DFEA",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Poppins",
+          fontWeight: 800,
+          fontSize: 18,
+          color: "#4F46E5",
+        }}
+      >
         {initial}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <img
+    <motion.img
       src={sources[srcIndex]}
       alt={name}
       onError={() => setSrcIndex((i) => i + 1)}
+      whileHover={{ scale: 1.08, rotate: 2 }}
+      transition={{ duration: 0.2 }}
       style={{
-        width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-        objectFit: "contain", background: "#fff", padding: 4,
-        border: "1px solid var(--border)",
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        flexShrink: 0,
+        objectFit: "contain",
+        background: "#FFFFFF",
+        padding: 4,
+        border: "1px solid #E2E8F0",
       }}
     />
   );
 }
 
 function CompanyCard({ company }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 25, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -15, scale: 0.97 }}
+      transition={{
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      whileHover={{
+        y: -5,
+        transition: { duration: 0.2 },
+      }}
       style={{
-        background: hovered ? "var(--card-hover)" : "var(--surface)",
-        border: `1px solid ${hovered ? "var(--accent)" : "var(--border)"}`,
-        borderRadius: 14, padding: "16px 18px",
-        transition: "all 0.2s",
-        display: "flex", flexDirection: "column", gap: 12,
+        background: "#FFFFFF",
+        border: "1px solid #E2E8F0",
+        borderRadius: 14,
+        padding: "16px 18px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        boxShadow: "0 4px 14px rgba(15,23,42,0.04)",
+        transition: "border-color 0.2s, box-shadow 0.2s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "#4F46E5";
+        e.currentTarget.style.boxShadow =
+          "0 14px 35px rgba(79,70,229,0.12)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "#E2E8F0";
+        e.currentTarget.style.boxShadow =
+          "0 4px 14px rgba(15,23,42,0.04)";
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <CompanyLogo name={company.name} domain={company.domain} />
+        <CompanyLogo
+          name={company.name}
+          domain={company.domain}
+        />
+
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{
-            fontFamily: "Poppins", fontSize: 14, fontWeight: 700,
-            color: "var(--text)", marginBottom: 2,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-          }}>
+          <h3
+            style={{
+              fontFamily: "Poppins",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#0B132B",
+              marginBottom: 2,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {company.name}
           </h3>
-          <p style={{ fontFamily: "Poppins", fontSize: 12, color: "var(--muted)" }}>
+
+          <p
+            style={{
+              fontFamily: "Poppins",
+              fontSize: 12,
+              color: "#64748B",
+            }}
+          >
             {company.location}
           </p>
         </div>
-        <span style={{
-          fontFamily: "JetBrains Mono", fontSize: 10,
-          padding: "3px 8px", borderRadius: 5,
-          background: "var(--surface2)", border: "1px solid var(--border)",
-          color: "var(--muted)", flexShrink: 0, whiteSpace: "nowrap",
-        }}>
+
+        <motion.span
+          whileHover={{ scale: 1.05 }}
+          style={{
+            fontFamily: "JetBrains Mono",
+            fontSize: 10,
+            padding: "3px 8px",
+            borderRadius: 5,
+            background: "#F8FAFC",
+            border: "1px solid #E2E8F0",
+            color: "#64748B",
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+          }}
+        >
           {company.industry}
-        </span>
+        </motion.span>
       </div>
 
       <div style={{ display: "flex", gap: 8 }}>
-        {/* Career Page — external */}
-        <a
+        <motion.a
           href={company.url}
           target="_blank"
           rel="noreferrer"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           style={{
-            flex: 1, display: "flex", alignItems: "center",
-            justifyContent: "center", gap: 6,
-            padding: "8px", background: "var(--accent)", color: "#09090B",
-            borderRadius: 9, textDecoration: "none",
-            fontFamily: "Poppins", fontSize: 12, fontWeight: 700,
-            transition: "opacity 0.2s",
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            padding: "8px",
+            background: "#4F46E5",
+            color: "#FFFFFF",
+            borderRadius: 9,
+            textDecoration: "none",
+            fontFamily: "Poppins",
+            fontSize: 12,
+            fontWeight: 700,
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = "0.85"}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
         >
           <ExternalLink size={13} />
           Career Page
-        </a>
+        </motion.a>
 
-        {/* Search Jobs — within JobXPortal */}
-        <Link
-          to={`/jobs?q=${encodeURIComponent(company.search)}&where=india`}
-          style={{
-            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "8px", background: "none",
-            border: "1px solid var(--border)", color: "var(--text)",
-            borderRadius: 9, textDecoration: "none",
-            fontFamily: "Poppins", fontSize: 12, fontWeight: 600,
-            transition: "border-color 0.15s, color 0.15s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--teal)"; e.currentTarget.style.color = "var(--teal)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text)"; }}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          style={{ flex: 1 }}
         >
-          Search Jobs
-        </Link>
+          <Link
+            to={`/jobs?q=${encodeURIComponent(company.search)}&where=india`}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px",
+              boxSizing: "border-box",
+              background: "#FFFFFF",
+              border: "1px solid #D9DFEA",
+              color: "#0B132B",
+              borderRadius: 9,
+              textDecoration: "none",
+              fontFamily: "Poppins",
+              fontSize: 12,
+              fontWeight: 600,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#14B8A6";
+              e.currentTarget.style.color = "#0F766E";
+              e.currentTarget.style.background = "#F0FDFA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "#D9DFEA";
+              e.currentTarget.style.color = "#0B132B";
+              e.currentTarget.style.background = "#FFFFFF";
+            }}
+          >
+            Search Jobs
+          </Link>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -254,7 +366,9 @@ export default function Companies() {
 
     if (activeGroup !== "All") {
       const industries = INDUSTRY_GROUPS[activeGroup] || [];
-      list = list.filter((c) => industries.includes(c.industry));
+      list = list.filter((c) =>
+        industries.includes(c.industry)
+      );
     }
 
     if (keyword.trim()) {
@@ -271,117 +385,318 @@ export default function Companies() {
   return (
     <>
       <Navbar />
-      <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px 64px" }}>
 
-          <button onClick={() => navigate(-1)} style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: "JetBrains Mono", fontSize: 12, color: "var(--muted)",
-            background: "none", border: "none", cursor: "pointer", marginBottom: 24,
-            letterSpacing: "0.08em",
-          }}>
-            <ArrowLeft size={14} /> Back
-          </button>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          background: "#F8FAFF",
+          minHeight: "100vh",
+          color: "#0B132B",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: "0 auto",
+            padding: "32px 24px 64px",
+          }}
+        >
+          <motion.button
+            initial={{ opacity: 0, x: -15 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
+            onClick={() => navigate(-1)}
+            whileHover={{ x: -3 }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "JetBrains Mono",
+              fontSize: 12,
+              color: "#64748B",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              marginBottom: 24,
+              letterSpacing: "0.08em",
+            }}
+          >
+            <ArrowLeft size={14} />
+            Back
+          </motion.button>
 
-          <p style={{ fontFamily: "JetBrains Mono", fontSize: 11, letterSpacing: "0.1em", color: "var(--muted)", textTransform: "uppercase", marginBottom: 8 }}>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.05 }}
+            style={{
+              fontFamily: "JetBrains Mono",
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              color: "#64748B",
+              textTransform: "uppercase",
+              marginBottom: 8,
+            }}
+          >
             COMPANY CAREERS
-          </p>
-          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, marginBottom: 6 }}>
-            Top Companies Hiring
-          </h1>
-          <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 24, maxWidth: 560 }}>
-            {filtered.length} companies · Click <strong style={{ color: "var(--accent)" }}>Career Page</strong> for direct applications or <strong style={{ color: "var(--teal)" }}>Search Jobs</strong> to find live listings on JobXPortal.
-          </p>
+          </motion.p>
 
-          {/* SEARCH */}
-          <div style={{ position: "relative", maxWidth: 480, marginBottom: 20 }}>
-            <Search size={15} style={{
-              position: "absolute", left: 14, top: "50%",
-              transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none",
-            }} />
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.1 }}
+            style={{
+              fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+              fontWeight: 800,
+              marginBottom: 6,
+              color: "#0B132B",
+            }}
+          >
+            Top Companies Hiring
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            style={{
+              color: "#64748B",
+              fontSize: 14,
+              marginBottom: 24,
+              maxWidth: 560,
+            }}
+          >
+            {filtered.length} companies · Click{" "}
+            <strong style={{ color: "#4F46E5" }}>
+              Career Page
+            </strong>{" "}
+            for direct applications or{" "}
+            <strong style={{ color: "#0F766E" }}>
+              Search Jobs
+            </strong>{" "}
+            to find live listings on JobXPortal.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            style={{
+              position: "relative",
+              maxWidth: 480,
+              marginBottom: 20,
+            }}
+          >
+            <Search
+              size={15}
+              style={{
+                position: "absolute",
+                left: 14,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#64748B",
+                pointerEvents: "none",
+              }}
+            />
+
             <input
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="Search companies, industry or city..."
               style={{
-                width: "100%", paddingLeft: 40, paddingRight: 16,
-                paddingTop: 11, paddingBottom: 11,
-                background: "var(--surface)", border: "1px solid var(--border)",
-                borderRadius: 12, color: "var(--text)",
-                fontFamily: "Poppins", fontSize: 13, outline: "none",
-                transition: "border-color 0.15s",
+                width: "100%",
+                paddingLeft: 40,
+                paddingRight: 16,
+                paddingTop: 11,
+                paddingBottom: 11,
+                background: "#FFFFFF",
+                border: "1px solid #D9DFEA",
+                borderRadius: 12,
+                color: "#0B132B",
+                fontFamily: "Poppins",
+                fontSize: 13,
+                outline: "none",
+                transition:
+                  "border-color 0.15s, box-shadow 0.15s",
+                boxSizing: "border-box",
               }}
-              onFocus={(e) => e.currentTarget.style.borderColor = "var(--accent)"}
-              onBlur={(e) => e.currentTarget.style.borderColor = "var(--border)"}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#4F46E5";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 3px rgba(79,70,229,0.10)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#D9DFEA";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
-          </div>
+          </motion.div>
 
-          {/* INDUSTRY GROUP PILLS */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.06,
+                  delayChildren: 0.25,
+                },
+              },
+            }}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 28,
+            }}
+          >
             {Object.keys(INDUSTRY_GROUPS).map((group) => (
-              <button
+              <motion.button
                 key={group}
+                variants={{
+                  hidden: {
+                    opacity: 0,
+                    y: 10,
+                    scale: 0.95,
+                  },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  },
+                }}
+                whileHover={{
+                  y: -2,
+                  scale: 1.03,
+                }}
+                whileTap={{
+                  scale: 0.96,
+                }}
                 onClick={() => setActiveGroup(group)}
                 style={{
-                  padding: "6px 14px", borderRadius: 999,
-                  border: `1px solid ${activeGroup === group ? "var(--accent)" : "var(--border)"}`,
-                  background: activeGroup === group ? "var(--accent)" : "transparent",
-                  color: activeGroup === group ? "#09090B" : "var(--muted)",
-                  fontFamily: "Poppins", fontSize: 12, fontWeight: 600,
-                  cursor: "pointer", transition: "all 0.15s",
-                }}
-                onMouseEnter={(e) => {
-                  if (activeGroup !== group) {
-                    e.currentTarget.style.borderColor = "var(--accent)";
-                    e.currentTarget.style.color = "var(--text)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeGroup !== group) {
-                    e.currentTarget.style.borderColor = "var(--border)";
-                    e.currentTarget.style.color = "var(--muted)";
-                  }
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  border: `1px solid ${
+                    activeGroup === group
+                      ? "#4F46E5"
+                      : "#D9DFEA"
+                  }`,
+                  background:
+                    activeGroup === group
+                      ? "#4F46E5"
+                      : "#FFFFFF",
+                  color:
+                    activeGroup === group
+                      ? "#FFFFFF"
+                      : "#64748B",
+                  fontFamily: "Poppins",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow:
+                    activeGroup === group
+                      ? "0 4px 12px rgba(79,70,229,0.16)"
+                      : "none",
                 }}
               >
                 {group}
-                <span style={{
-                  marginLeft: 6, fontFamily: "JetBrains Mono",
-                  fontSize: 10, opacity: 0.7,
-                }}>
+
+                <span
+                  style={{
+                    marginLeft: 6,
+                    fontFamily: "JetBrains Mono",
+                    fontSize: 10,
+                    opacity: 0.7,
+                  }}
+                >
                   {group === "All"
                     ? COMPANIES.length
-                    : COMPANIES.filter((c) => (INDUSTRY_GROUPS[group] || []).includes(c.industry)).length
-                  }
+                    : COMPANIES.filter((c) =>
+                        (
+                          INDUSTRY_GROUPS[group] || []
+                        ).includes(c.industry)
+                      ).length}
                 </span>
-              </button>
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
 
-          {/* GRID */}
-          {filtered.length === 0 ? (
-            <div style={{
-              background: "var(--surface)", border: "1px solid var(--border)",
-              borderRadius: 16, padding: "40px", textAlign: "center",
-            }}>
-              <Building2 size={32} style={{ color: "var(--muted)", margin: "0 auto 12px", display: "block" }} />
-              <p style={{ color: "var(--muted)", fontFamily: "Poppins" }}>No companies match your search.</p>
-            </div>
-          ) : (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: 14,
-            }}>
-              {filtered.map((company) => (
-                <CompanyCard key={company.name} company={company} />
-              ))}
-            </div>
-          )}
+          <AnimatePresence mode="popLayout">
+            {filtered.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{
+                  opacity: 0,
+                  y: 15,
+                  scale: 0.98,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -10,
+                }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: 16,
+                  padding: "40px",
+                  textAlign: "center",
+                  boxShadow:
+                    "0 4px 18px rgba(15,23,42,0.04)",
+                }}
+              >
+                <Building2
+                  size={32}
+                  style={{
+                    color: "#94A3B8",
+                    margin: "0 auto 12px",
+                    display: "block",
+                  }}
+                />
 
+                <p
+                  style={{
+                    color: "#64748B",
+                    fontFamily: "Poppins",
+                  }}
+                >
+                  No companies match your search.
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                layout
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fill, minmax(280px, 1fr))",
+                  gap: 14,
+                }}
+              >
+                <AnimatePresence mode="popLayout">
+                  {filtered.map((company) => (
+                    <CompanyCard
+                      key={company.name}
+                      company={company}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
         <Footer />
-      </div>
+      </motion.div>
     </>
   );
 }

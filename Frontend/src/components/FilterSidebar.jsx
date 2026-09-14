@@ -38,86 +38,145 @@ export default function FilterSidebar({
   ];
 
   const activeCount =
-    (days < 30 ? 1 : 0) + (remoteOnly ? 1 : 0) +
-    jobType.length + experience.length + (category ? 1 : 0);
+    (days < 30 ? 1 : 0) +
+    (remoteOnly ? 1 : 0) +
+    jobType.length +
+    experience.length +
+    (category ? 1 : 0);
 
   function clearAll() {
-    setDays(30); setRemoteOnly(false);
-    setJobType([]); setExperience([]); setCategory("");
+    setDays(30);
+    setRemoteOnly(false);
+    setJobType([]);
+    setExperience([]);
+    setCategory("");
     setMobileOpen(false);
   }
 
   const selectStyle = {
     width: "100%",
-    background: "var(--bg)",
-    border: "1px solid var(--border)",
-    borderRadius: 10, padding: "10px 12px",
-    fontSize: 13, color: "var(--text)",
-    outline: "none", cursor: "pointer",
+    background: "#FFFFFF",
+    border: "1px solid #D9DFEA",
+    borderRadius: 10,
+    padding: "10px 12px",
+    fontSize: 13,
+    color: "#0B132B",
+    outline: "none",
+    cursor: "pointer",
     fontFamily: "Poppins, sans-serif",
-    transition: "border-color 0.15s",
+    transition: "border-color 0.15s, box-shadow 0.15s",
   };
 
   const labelStyle = {
-    fontSize: 12, fontWeight: 600,
-    color: "var(--text)", display: "block",
-    marginBottom: 8, fontFamily: "Poppins, sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#0B132B",
+    display: "block",
+    marginBottom: 8,
+    fontFamily: "Poppins, sans-serif",
   };
 
   const checkLabelStyle = {
-    display: "flex", alignItems: "center", gap: 8,
-    fontSize: 13, color: "var(--muted)",
-    cursor: "pointer", fontFamily: "Poppins, sans-serif",
-    transition: "color 0.15s", userSelect: "none",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: 13,
+    color: "#64748B",
+    cursor: "pointer",
+    fontFamily: "Poppins, sans-serif",
+    transition: "color 0.15s",
+    userSelect: "none",
   };
 
   const filterContent = (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-      {/* HEADER */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{
-          fontFamily: "JetBrains Mono", fontSize: 11,
-          letterSpacing: "0.1em", color: "var(--muted)",
-          textTransform: "uppercase",
-        }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "JetBrains Mono",
+            fontSize: 11,
+            letterSpacing: "0.1em",
+            color: "#64748B",
+            textTransform: "uppercase",
+          }}
+        >
           FILTERS {activeCount > 0 && `(${activeCount})`}
         </span>
+
         {activeCount > 0 && (
-          <button onClick={clearAll} style={{
-            fontFamily: "JetBrains Mono", fontSize: 10, letterSpacing: "0.08em",
-            textTransform: "uppercase", color: "var(--muted)", background: "none",
-            border: "none", cursor: "pointer", transition: "color 0.15s",
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "#fb7185"}
-            onMouseLeave={(e) => e.currentTarget.style.color = "var(--muted)"}
+          <button
+            onClick={clearAll}
+            style={{
+              fontFamily: "JetBrains Mono",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#64748B",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              transition: "color 0.15s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "#EF4444")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "#64748B")
+            }
           >
             CLEAR ALL
           </button>
         )}
       </div>
 
-      {/* CATEGORY */}
       <div>
         <label style={labelStyle}>Job Category</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
           style={selectStyle}
-          onFocus={(e) => e.currentTarget.style.borderColor = "var(--accent)"}
-          onBlur={(e) => e.currentTarget.style.borderColor = "var(--border)"}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#4F46E5";
+            e.currentTarget.style.boxShadow =
+              "0 0 0 3px rgba(79,70,229,0.10)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#D9DFEA";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         >
           {categories.map((cat) => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
           ))}
         </select>
       </div>
 
-      {/* POSTED WITHIN */}
       <div>
         <label style={labelStyle}>Added to feed within</label>
-        <select value={days} onChange={(e) => setDays(Number(e.target.value))}
+
+        <select
+          value={days}
+          onChange={(e) => setDays(Number(e.target.value))}
           style={selectStyle}
-          onFocus={(e) => e.currentTarget.style.borderColor = "var(--accent)"}
-          onBlur={(e) => e.currentTarget.style.borderColor = "var(--border)"}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#4F46E5";
+            e.currentTarget.style.boxShadow =
+              "0 0 0 3px rgba(79,70,229,0.10)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#D9DFEA";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         >
           <option value={1}>Last 24 Hours</option>
           <option value={3}>Last 3 Days</option>
@@ -126,14 +185,20 @@ export default function FilterSidebar({
         </select>
       </div>
 
-      {/* JOB TYPE */}
       <div>
         <label style={labelStyle}>Job type</label>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {types.map((type) => (
-            <label key={type} style={checkLabelStyle}
-              onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--muted)"}
+            <label
+              key={type}
+              style={checkLabelStyle}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "#0B132B")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "#64748B")
+              }
             >
               <input
                 type="checkbox"
@@ -145,7 +210,12 @@ export default function FilterSidebar({
                       : [...prev, type]
                   )
                 }
-                style={{ accentColor: "var(--accent)", width: 15, height: 15 }}
+                style={{
+                  accentColor: "#4F46E5",
+                  width: 15,
+                  height: 15,
+                  cursor: "pointer",
+                }}
               />
               {type}
             </label>
@@ -153,14 +223,20 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* EXPERIENCE */}
       <div>
         <label style={labelStyle}>Experience</label>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {experienceOptions.map((opt) => (
-            <label key={opt.value} style={checkLabelStyle}
-              onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--muted)"}
+            <label
+              key={opt.value}
+              style={checkLabelStyle}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "#0B132B")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "#64748B")
+              }
             >
               <input
                 type="checkbox"
@@ -172,7 +248,12 @@ export default function FilterSidebar({
                       : [...prev, opt.value]
                   )
                 }
-                style={{ accentColor: "var(--teal)", width: 15, height: 15 }}
+                style={{
+                  accentColor: "#14B8A6",
+                  width: 15,
+                  height: 15,
+                  cursor: "pointer",
+                }}
               />
               {opt.label}
             </label>
@@ -180,26 +261,50 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* REMOTE ONLY */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", fontFamily: "Poppins" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#0B132B",
+            fontFamily: "Poppins",
+          }}
+        >
           Remote only
         </span>
+
         <div
           onClick={() => setRemoteOnly((r) => !r)}
           style={{
-            width: 40, height: 22, borderRadius: 11,
-            background: remoteOnly ? "var(--teal)" : "var(--border)",
-            position: "relative", cursor: "pointer",
-            transition: "background 0.25s", flexShrink: 0,
+            width: 40,
+            height: 22,
+            borderRadius: 11,
+            background: remoteOnly ? "#14B8A6" : "#CBD5E1",
+            position: "relative",
+            cursor: "pointer",
+            transition: "background 0.25s",
+            flexShrink: 0,
           }}
         >
-          <span style={{
-            position: "absolute", top: 3,
-            left: remoteOnly ? 21 : 3,
-            width: 16, height: 16, borderRadius: "50%",
-            background: "white", transition: "left 0.25s",
-          }} />
+          <span
+            style={{
+              position: "absolute",
+              top: 3,
+              left: remoteOnly ? 21 : 3,
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              background: "#FFFFFF",
+              transition: "left 0.25s",
+              boxShadow: "0 1px 3px rgba(15,23,42,0.18)",
+            }}
+          />
         </div>
       </div>
     </div>
@@ -207,78 +312,157 @@ export default function FilterSidebar({
 
   return (
     <>
-      {/* MOBILE FILTER BUTTON */}
       <div className="md:hidden" style={{ marginBottom: 16 }}>
-        <button onClick={() => setMobileOpen(true)} style={{
-          display: "flex", alignItems: "center", gap: 8,
-          padding: "9px 18px",
-          background: "var(--surface)", border: "1px solid var(--border)",
-          borderRadius: 10, color: "var(--text)",
-          fontFamily: "Poppins", fontSize: 13, fontWeight: 600,
-          cursor: "pointer",
-        }}>
+        <button
+          onClick={() => setMobileOpen(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "9px 18px",
+            background: "#FFFFFF",
+            border: "1px solid #D9DFEA",
+            borderRadius: 10,
+            color: "#0B132B",
+            fontFamily: "Poppins",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
           <SlidersHorizontal size={15} />
           Filters
+
           {activeCount > 0 && (
-            <span style={{
-              width: 20, height: 20, borderRadius: "50%",
-              background: "var(--accent)", color: "#09090B",
-              fontSize: 10, fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
+            <span
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: "50%",
+                background: "#4F46E5",
+                color: "#FFFFFF",
+                fontSize: 10,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               {activeCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* MOBILE DRAWER */}
       {mobileOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 50 }} className="md:hidden">
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+          }}
+          className="md:hidden"
+        >
           <div
-            style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(11,19,43,0.45)",
+              backdropFilter: "blur(3px)",
+            }}
             onClick={() => setMobileOpen(false)}
           />
-          <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0,
-            background: "var(--surface)",
-            borderTop: "1px solid var(--border)",
-            borderRadius: "20px 20px 0 0",
-            padding: 24, maxHeight: "85vh", overflowY: "auto",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <span style={{ fontFamily: "JetBrains Mono", fontSize: 11, letterSpacing: "0.1em", color: "var(--muted)", textTransform: "uppercase" }}>
+
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: "#FFFFFF",
+              borderTop: "1px solid #E2E8F0",
+              borderRadius: "20px 20px 0 0",
+              padding: 24,
+              maxHeight: "85vh",
+              overflowY: "auto",
+              boxShadow: "0 -10px 40px rgba(15,23,42,0.12)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "JetBrains Mono",
+                  fontSize: 11,
+                  letterSpacing: "0.1em",
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                }}
+              >
                 FILTERS
               </span>
-              <button onClick={() => setMobileOpen(false)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer" }}>
-                <X size={20} />
+
+              <button
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  background: "#F8FAFC",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: 8,
+                  color: "#64748B",
+                  cursor: "pointer",
+                  width: 34,
+                  height: 34,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <X size={18} />
               </button>
             </div>
+
             {filterContent}
-            <button onClick={() => setMobileOpen(false)} style={{
-              width: "100%", marginTop: 20, padding: "13px",
-              background: "var(--accent)", color: "#09090B",
-              borderRadius: 12, border: "none", cursor: "pointer",
-              fontFamily: "Poppins", fontSize: 14, fontWeight: 700,
-            }}>
+
+            <button
+              onClick={() => setMobileOpen(false)}
+              style={{
+                width: "100%",
+                marginTop: 20,
+                padding: "13px",
+                background: "#4F46E5",
+                color: "#FFFFFF",
+                borderRadius: 12,
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "Poppins",
+                fontSize: 14,
+                fontWeight: 700,
+              }}
+            >
               Apply Filters
             </button>
           </div>
         </div>
       )}
 
-      {/* DESKTOP SIDEBAR — NO sticky here, sticky is on the wrapper in Jobs.jsx */}
       <div
         className="hidden md:block"
         style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
+          background: "#FFFFFF",
+          border: "1px solid #E2E8F0",
           borderRadius: 16,
           padding: 20,
           maxHeight: "calc(100vh - 110px)",
           overflowY: "auto",
           scrollbarWidth: "thin",
-          scrollbarColor: "var(--border) transparent",
+          scrollbarColor: "#CBD5E1 transparent",
+          boxShadow: "0 4px 18px rgba(15,23,42,0.04)",
         }}
       >
         {filterContent}
