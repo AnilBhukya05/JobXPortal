@@ -148,7 +148,7 @@ export default function PortalCard({ portal, index = 0 }) {
         <button
           type="button"
           onClick={openJobs}
-          className={`inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#475467] transition-all ${theme.text}`}
+          className={`cursor-pointer inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#475467] transition-all ${theme.text}`}
         >
           Explore Jobs
           <ArrowUpRight

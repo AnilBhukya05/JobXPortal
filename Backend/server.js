@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
+import path from "path";
 
 import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
@@ -27,6 +28,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({

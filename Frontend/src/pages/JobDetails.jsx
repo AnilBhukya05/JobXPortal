@@ -122,7 +122,9 @@ export default function JobDetails() {
     contextJob ||
     (() => {
       try {
-        const stored = sessionStorage.getItem(`jobxportal_preview_${id}`);
+        const stored = sessionStorage.getItem(
+          `jobxportal_preview_${id}`
+        );
 
         return stored ? JSON.parse(stored) : null;
       } catch {
@@ -133,6 +135,7 @@ export default function JobDetails() {
   useEffect(() => {
     if (!job && !loading && !refetched) {
       setRefetched(true);
+
       search({
         what: "software developer",
         where: "india",
@@ -198,7 +201,7 @@ export default function JobDetails() {
 
         <div
           style={{
-            background: "var(--bg)",
+            background: "#F8FAFF",
             minHeight: "100vh",
             display: "flex",
             alignItems: "center",
@@ -209,11 +212,11 @@ export default function JobDetails() {
         >
           <div
             style={{
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               borderRadius: "50%",
-              border: "3px solid var(--border)",
-              borderTopColor: "var(--accent)",
+              border: "3px solid #E2E6F0",
+              borderTopColor: "#4F46E5",
               animation: "spin 0.8s linear infinite",
             }}
           />
@@ -222,25 +225,24 @@ export default function JobDetails() {
             style={{
               fontFamily: "JetBrains Mono",
               fontSize: 12,
-              color: "var(--muted)",
+              color: "#64748B",
               letterSpacing: "0.1em",
+              margin: 0,
             }}
           >
             LOADING JOB...
           </p>
-
-          <style>
-            {`
-              @keyframes spin {
-                to {
-                  transform: rotate(360deg);
-                }
-              }
-            `}
-          </style>
         </div>
 
         <Footer />
+
+        <style>{`
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
       </>
     );
   }
@@ -259,9 +261,9 @@ export default function JobDetails() {
 
         <div
           style={{
-            background: "var(--bg)",
+            background: "#F8FAFF",
             minHeight: "100vh",
-            color: "var(--text)",
+            color: "#0B132B",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -275,7 +277,7 @@ export default function JobDetails() {
               fontFamily: "JetBrains Mono",
               fontSize: 11,
               letterSpacing: "0.1em",
-              color: "var(--muted)",
+              color: "#64748B",
               marginBottom: 12,
             }}
           >
@@ -284,8 +286,10 @@ export default function JobDetails() {
 
           <h1
             style={{
+              fontFamily: "Poppins",
               fontSize: "1.8rem",
-              fontWeight: 700,
+              fontWeight: 800,
+              color: "#0B132B",
               marginBottom: 12,
             }}
           >
@@ -294,8 +298,10 @@ export default function JobDetails() {
 
           <p
             style={{
-              color: "var(--muted)",
+              color: "#64748B",
+              fontFamily: "Poppins",
               fontSize: 14,
+              lineHeight: 1.7,
               marginBottom: 28,
               maxWidth: 400,
             }}
@@ -307,14 +313,18 @@ export default function JobDetails() {
           <Link
             to="/jobs"
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               padding: "12px 28px",
-              background: "var(--accent)",
-              color: "#09090B",
+              background: "#4F46E5",
+              color: "#FFFFFF",
               borderRadius: 10,
               fontWeight: 700,
               textDecoration: "none",
               fontFamily: "Poppins, sans-serif",
               fontSize: 14,
+              boxShadow: "0 8px 20px rgba(79,70,229,0.18)",
             }}
           >
             Back to jobs
@@ -329,25 +339,28 @@ export default function JobDetails() {
   const status = statusFor(job.postedDaysAgo);
 
   const isTruncated =
-    Boolean(job.description) && job.description.trim().slice(-3) === "...";
+    Boolean(job.description) &&
+    job.description.trim().slice(-3) === "...";
 
   const isEmployerJob = String(job.id).startsWith("employer-");
 
   const statusColors = {
     NEW: {
-      color: "var(--teal)",
-      border: "rgba(45,212,191,0.3)",
-      bg: "rgba(45,212,191,0.08)",
+      color: "#4F46E5",
+      border: "#C7D2FE",
+      bg: "#EEF2FF",
     },
+
     LIVE: {
-      color: "var(--accent)",
-      border: "rgba(0,255,179,0.3)",
-      bg: "rgba(0,255,179,0.08)",
+      color: "#10B981",
+      border: "#A7F3D0",
+      bg: "#ECFDF5",
     },
+
     "CLOSING SOON": {
-      color: "#fb7185",
-      border: "rgba(251,113,133,0.3)",
-      bg: "rgba(251,113,133,0.08)",
+      color: "#E11D48",
+      border: "#FECDD3",
+      bg: "#FFF1F2",
     },
   };
 
@@ -382,18 +395,19 @@ export default function JobDetails() {
 
       <main
         style={{
-          background: "var(--bg)",
+          background: "#F8FAFF",
           minHeight: "100vh",
-          color: "var(--text)",
-          padding: "32px 24px 64px",
+          color: "#0B132B",
+          padding: "40px 24px 72px",
         }}
       >
         <div
           style={{
-            maxWidth: 760,
+            maxWidth: 820,
             margin: "0 auto",
           }}
         >
+          {/* Back */}
           <Link
             to="/jobs"
             style={{
@@ -402,36 +416,39 @@ export default function JobDetails() {
               gap: 8,
               fontFamily: "JetBrains Mono",
               fontSize: 12,
-              color: "var(--muted)",
+              color: "#64748B",
               textDecoration: "none",
-              letterSpacing: "0.08em",
-              transition: "color 0.15s",
+              letterSpacing: "0.06em",
+              transition: "color 0.2s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "var(--accent)";
+              e.currentTarget.style.color = "#4F46E5";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "var(--muted)";
+              e.currentTarget.style.color = "#64748B";
             }}
           >
             <ArrowLeft size={14} />
             Back to jobs
           </Link>
 
+          {/* Job Card */}
           <article
             style={{
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
+              background: "#FFFFFF",
+              border: "1px solid #E2E6F0",
               borderRadius: 20,
-              padding: "36px 32px",
+              padding: "34px 32px",
               marginTop: 20,
+              boxShadow: "0 10px 35px rgba(15,23,42,0.05)",
             }}
           >
+            {/* Status */}
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 10,
+                gap: 8,
                 marginBottom: 20,
               }}
             >
@@ -440,11 +457,12 @@ export default function JobDetails() {
                   fontFamily: "JetBrains Mono",
                   fontSize: 11,
                   letterSpacing: "0.08em",
-                  padding: "4px 12px",
-                  borderRadius: 6,
+                  padding: "5px 12px",
+                  borderRadius: 7,
                   color: sc.color,
                   border: `1px solid ${sc.border}`,
                   background: sc.bg,
+                  fontWeight: 600,
                 }}
               >
                 {status}
@@ -456,11 +474,12 @@ export default function JobDetails() {
                     fontFamily: "JetBrains Mono",
                     fontSize: 11,
                     letterSpacing: "0.08em",
-                    padding: "4px 12px",
-                    borderRadius: 6,
-                    color: "var(--accent)",
-                    border: "1px solid rgba(0,255,179,0.3)",
-                    background: "rgba(0,255,179,0.08)",
+                    padding: "5px 12px",
+                    borderRadius: 7,
+                    color: "#4F46E5",
+                    border: "1px solid #C7D2FE",
+                    background: "#EEF2FF",
+                    fontWeight: 600,
                   }}
                 >
                   REMOTE
@@ -468,23 +487,29 @@ export default function JobDetails() {
               )}
             </div>
 
+            {/* Title */}
             <h1
               style={{
-                fontSize: "clamp(1.4rem, 3vw, 2rem)",
+                fontFamily: "Poppins",
+                fontSize: "clamp(1.6rem, 4vw, 2.35rem)",
                 fontWeight: 800,
                 lineHeight: 1.2,
-                marginBottom: 8,
+                color: "#0B132B",
+                margin: "0 0 7px",
+                letterSpacing: "-0.035em",
               }}
             >
               {jobTitle}
             </h1>
 
+            {/* Company */}
             <h2
               style={{
+                fontFamily: "Poppins",
                 fontSize: "1rem",
                 fontWeight: 500,
-                color: "var(--muted)",
-                marginBottom: 16,
+                color: "#64748B",
+                margin: "0 0 18px",
               }}
             >
               {companyName}
@@ -493,9 +518,10 @@ export default function JobDetails() {
                 <Link
                   to={`/company/${job.employerId}`}
                   style={{
-                    color: "var(--accent)",
+                    color: "#4F46E5",
                     fontFamily: "Poppins",
                     fontSize: 13,
+                    fontWeight: 600,
                     textDecoration: "none",
                     marginLeft: 10,
                   }}
@@ -505,6 +531,7 @@ export default function JobDetails() {
               )}
             </h2>
 
+            {/* Job Meta */}
             <div
               style={{
                 display: "flex",
@@ -512,7 +539,7 @@ export default function JobDetails() {
                 gap: 8,
                 fontFamily: "JetBrains Mono",
                 fontSize: 13,
-                color: "var(--muted)",
+                color: "#64748B",
                 marginBottom: 20,
               }}
             >
@@ -526,28 +553,37 @@ export default function JobDetails() {
 
               <span
                 style={{
-                  color: "var(--accent)",
-                  fontWeight: 600,
+                  color: "#10B981",
+                  fontWeight: 700,
                 }}
               >
                 {salary}
               </span>
             </div>
 
+            {/* Experience */}
             {job.experience && (
               <div
                 style={{
                   fontFamily: "JetBrains Mono",
                   fontSize: 13,
-                  color: "var(--muted)",
+                  color: "#64748B",
                   marginBottom: 20,
                 }}
               >
                 Experience:{" "}
-                <span style={{ color: "var(--text)" }}>{job.experience}</span>
+                <span
+                  style={{
+                    color: "#0B132B",
+                    fontWeight: 600,
+                  }}
+                >
+                  {job.experience}
+                </span>
               </div>
             )}
 
+            {/* Tags */}
             {tags.length > 0 && (
               <div
                 style={{
@@ -561,13 +597,14 @@ export default function JobDetails() {
                   <span
                     key={tag}
                     style={{
-                      fontFamily: "JetBrains Mono",
+                      fontFamily: "Poppins",
                       fontSize: 12,
-                      padding: "4px 12px",
-                      borderRadius: 6,
-                      background: "var(--surface2)",
-                      border: "1px solid var(--border)",
-                      color: "var(--muted)",
+                      padding: "6px 12px",
+                      borderRadius: 20,
+                      background: "#F4F3FF",
+                      border: "1px solid #E0E7FF",
+                      color: "#4F46E5",
+                      fontWeight: 500,
                     }}
                   >
                     {tag}
@@ -576,19 +613,24 @@ export default function JobDetails() {
               </div>
             )}
 
+            {/* Divider */}
             <div
               style={{
-                borderTop: "1px solid var(--border)",
-                marginBottom: 24,
+                borderTop: "1px solid #E8ECF3",
+                marginBottom: 26,
               }}
             />
 
+            {/* Description */}
             <section>
               <h2
                 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
+                  fontFamily: "Poppins",
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: "#0B132B",
                   marginBottom: 14,
+                  letterSpacing: "-0.02em",
                 }}
               >
                 Job Description
@@ -596,28 +638,31 @@ export default function JobDetails() {
 
               <p
                 style={{
-                  color: "var(--text)",
-                  lineHeight: 1.8,
+                  color: "#334155",
+                  fontFamily: "Poppins",
+                  lineHeight: 1.85,
                   fontSize: 15,
                   whiteSpace: "pre-line",
-                  opacity: 0.9,
+                  margin: 0,
                 }}
               >
                 {job.description || "No job description is available."}
               </p>
             </section>
 
+            {/* Truncated Notice */}
             {isTruncated && (
               <p
                 style={{
-                  marginTop: 16,
+                  marginTop: 18,
                   fontSize: 13,
-                  color: "var(--muted)",
-                  fontFamily: "JetBrains Mono",
-                  padding: "12px 16px",
-                  background: "var(--surface2)",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
+                  color: "#64748B",
+                  fontFamily: "Poppins",
+                  lineHeight: 1.6,
+                  padding: "13px 16px",
+                  background: "#F8FAFF",
+                  borderRadius: 10,
+                  border: "1px solid #E2E6F0",
                 }}
               >
                 This is a preview. The full job description is available on the
@@ -625,12 +670,13 @@ export default function JobDetails() {
               </p>
             )}
 
+            {/* Apply Actions */}
             <div
               style={{
                 display: "flex",
                 gap: 10,
                 flexWrap: "wrap",
-                marginTop: 28,
+                marginTop: 30,
               }}
             >
               {job.applyUrl && (
@@ -642,24 +688,29 @@ export default function JobDetails() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 8,
-                    background: "var(--accent)",
-                    color: "#09090B",
-                    padding: "13px 28px",
-                    borderRadius: 12,
+                    background: "#4F46E5",
+                    color: "#FFFFFF",
+                    padding: "13px 26px",
+                    borderRadius: 11,
                     fontWeight: 700,
                     fontSize: 14,
                     fontFamily: "Poppins, sans-serif",
                     textDecoration: "none",
-                    transition: "opacity 0.2s",
+                    transition: "all 0.2s",
+                    boxShadow: "0 8px 20px rgba(79,70,229,0.18)",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = "0.85";
+                    e.currentTarget.style.background = "#4338CA";
+                    e.currentTarget.style.transform = "translateY(-1px)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = "1";
+                    e.currentTarget.style.background = "#4F46E5";
+                    e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
-                  {isTruncated ? "Read Full Description & Apply" : "Apply Now"}
+                  {isTruncated
+                    ? "Read Full Description & Apply"
+                    : "Apply Now"}
 
                   <ExternalLink size={15} />
                 </a>
@@ -673,17 +724,30 @@ export default function JobDetails() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 8,
-                    background: applied ? "rgba(0,255,179,0.1)" : "none",
+                    background: applied ? "#ECFDF5" : "#FFFFFF",
                     border: `1px solid ${
-                      applied ? "var(--accent)" : "var(--border)"
+                      applied ? "#A7F3D0" : "#D9DFEA"
                     }`,
-                    color: applied ? "var(--accent)" : "var(--muted)",
-                    padding: "13px 24px",
-                    borderRadius: 12,
+                    color: applied ? "#059669" : "#475569",
+                    padding: "13px 22px",
+                    borderRadius: 11,
                     fontWeight: 700,
                     fontSize: 14,
                     fontFamily: "Poppins, sans-serif",
                     cursor: applied ? "default" : "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!applied) {
+                      e.currentTarget.style.borderColor = "#4F46E5";
+                      e.currentTarget.style.color = "#4F46E5";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!applied) {
+                      e.currentTarget.style.borderColor = "#D9DFEA";
+                      e.currentTarget.style.color = "#475569";
+                    }
                   }}
                 >
                   {applied
@@ -695,6 +759,7 @@ export default function JobDetails() {
               )}
             </div>
 
+            {/* Career Tools */}
             <div
               style={{
                 display: "flex",
@@ -710,22 +775,24 @@ export default function JobDetails() {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
-                  padding: "9px 18px",
-                  background: "rgba(0,255,179,0.1)",
-                  border: "1px solid rgba(0,255,179,0.3)",
-                  color: "var(--accent)",
+                  padding: "9px 17px",
+                  background: "#EEF2FF",
+                  border: "1px solid #C7D2FE",
+                  color: "#4F46E5",
                   borderRadius: 10,
                   textDecoration: "none",
                   fontFamily: "Poppins",
                   fontSize: 13,
                   fontWeight: 600,
-                  transition: "background 0.2s",
+                  transition: "all 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(0,255,179,0.18)";
+                  e.currentTarget.style.background = "#E0E7FF";
+                  e.currentTarget.style.borderColor = "#A5B4FC";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(0,255,179,0.1)";
+                  e.currentTarget.style.background = "#EEF2FF";
+                  e.currentTarget.style.borderColor = "#C7D2FE";
                 }}
               >
                 🎯 Interview Prep
@@ -738,41 +805,51 @@ export default function JobDetails() {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
-                  padding: "9px 18px",
-                  background: "rgba(255,176,32,0.1)",
-                  border: "1px solid rgba(255,176,32,0.3)",
-                  color: "#FFB020",
+                  padding: "9px 17px",
+                  background: "#FFF7ED",
+                  border: "1px solid #FED7AA",
+                  color: "#EA580C",
                   borderRadius: 10,
                   textDecoration: "none",
                   fontFamily: "Poppins",
                   fontSize: 13,
                   fontWeight: 600,
-                  transition: "background 0.2s",
+                  transition: "all 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(255,176,32,0.18)";
+                  e.currentTarget.style.background = "#FFEDD5";
+                  e.currentTarget.style.borderColor = "#FDBA74";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,176,32,0.1)";
+                  e.currentTarget.style.background = "#FFF7ED";
+                  e.currentTarget.style.borderColor = "#FED7AA";
                 }}
               >
                 ✉️ Cover Letter
               </Link>
             </div>
 
+            {/* Report */}
             {isEmployerJob && (
-              <div style={{ marginTop: 20 }}>
+              <div style={{ marginTop: 22 }}>
                 {!reportOpen ? (
                   <button
                     onClick={() => setReportOpen(true)}
                     style={{
                       background: "none",
                       border: "none",
-                      color: "var(--muted)",
+                      padding: 0,
+                      color: "#94A3B8",
                       fontFamily: "JetBrains Mono",
                       fontSize: 11,
                       cursor: "pointer",
                       textDecoration: "underline",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#E11D48";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "#94A3B8";
                     }}
                   >
                     Report this listing
@@ -780,9 +857,10 @@ export default function JobDetails() {
                 ) : reportSent ? (
                   <p
                     style={{
-                      color: "var(--accent)",
+                      color: "#059669",
                       fontFamily: "Poppins",
                       fontSize: 13,
+                      margin: 0,
                     }}
                   >
                     Thanks — we'll review it.
@@ -803,13 +881,20 @@ export default function JobDetails() {
                       style={{
                         flex: 1,
                         minWidth: 200,
-                        background: "var(--bg)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 8,
-                        padding: "8px 12px",
-                        color: "var(--text)",
+                        background: "#FFFFFF",
+                        border: "1px solid #D9DFEA",
+                        borderRadius: 9,
+                        padding: "9px 12px",
+                        color: "#0B132B",
                         fontFamily: "Poppins",
                         fontSize: 12,
+                        outline: "none",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = "#4F46E5";
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = "#D9DFEA";
                       }}
                     />
 
@@ -817,15 +902,17 @@ export default function JobDetails() {
                       onClick={submitReport}
                       disabled={!reportReason.trim()}
                       style={{
-                        padding: "8px 16px",
-                        background: "#fb7185",
-                        color: "#09090B",
+                        padding: "9px 16px",
+                        background: "#E11D48",
+                        color: "#FFFFFF",
                         border: "none",
-                        borderRadius: 8,
+                        borderRadius: 9,
                         fontFamily: "Poppins",
                         fontSize: 12,
                         fontWeight: 700,
-                        cursor: reportReason.trim() ? "pointer" : "not-allowed",
+                        cursor: reportReason.trim()
+                          ? "pointer"
+                          : "not-allowed",
                         opacity: reportReason.trim() ? 1 : 0.5,
                       }}
                     >
@@ -840,6 +927,26 @@ export default function JobDetails() {
       </main>
 
       <Footer />
+
+      <style>{`
+        @media (max-width: 640px) {
+          main {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+          }
+
+          article {
+            padding: 24px 18px !important;
+            border-radius: 16px !important;
+          }
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </>
   );
 }

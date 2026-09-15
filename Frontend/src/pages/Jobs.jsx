@@ -5,7 +5,7 @@ import {
   Link,
 } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -13,23 +13,230 @@ import JobCard from "../components/JobCard";
 import FilterSidebar from "../components/FilterSidebar";
 import SearchBar from "../components/SearchBar";
 import SEO from "../components/SEO";
-import { JobsLoading, DemoBanner } from "../components/JobsStatus";
+import {
+  JobsLoading,
+  DemoBanner,
+} from "../components/JobsStatus";
 import { useJobs } from "../context/JobsContext";
 import { portals } from "../data/portals";
 
+/* ============================================================
+   ROLE MAP
+============================================================ */
+
+const ROLE_MAP = {
+  "frontend-developer": "Frontend Developer",
+  "react-developer": "React Developer",
+  "java-developer": "Java Developer",
+  "python-developer": "Python Developer",
+  "software-developer": "Software Developer",
+  "full-stack-developer": "Full Stack Developer",
+  "backend-developer": "Backend Developer",
+  "javascript-developer": "JavaScript Developer",
+  "fresher-jobs": "Fresher",
+};
+
+/* ============================================================
+   ROLE KEYWORDS
+   Helps match related job titles.
+============================================================ */
+
+const ROLE_KEYWORDS = {
+  "frontend-developer": [
+    "frontend",
+    "front end",
+    "front-end",
+    "ui developer",
+    "web developer",
+    "react developer",
+    "javascript developer",
+  ],
+
+  "react-developer": [
+    "react",
+    "react.js",
+    "reactjs",
+  ],
+
+  "java-developer": [
+    "java",
+    "java developer",
+    "java engineer",
+    "spring boot",
+  ],
+
+  "python-developer": [
+    "python",
+    "python developer",
+    "django",
+    "flask",
+    "fastapi",
+  ],
+
+  "software-developer": [
+    "software developer",
+    "software engineer",
+    "application developer",
+    "developer",
+  ],
+
+  "full-stack-developer": [
+    "full stack",
+    "fullstack",
+    "full-stack",
+  ],
+
+  "backend-developer": [
+    "backend",
+    "back end",
+    "back-end",
+    "backend developer",
+    "backend engineer",
+    "server-side",
+    "node.js",
+    "nodejs",
+    "express",
+    "api developer",
+  ],
+
+  "javascript-developer": [
+    "javascript",
+    "javascript developer",
+    "js developer",
+    "node.js",
+    "nodejs",
+  ],
+
+  "fresher-jobs": [
+    "fresher",
+    "entry level",
+    "entry-level",
+    "junior",
+    "graduate",
+    "trainee",
+    "intern",
+  ],
+};
+
+/* ============================================================
+   FORMAT SLUG
+============================================================ */
+
+function formatSlug(value = "") {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() +
+        word.slice(1)
+    )
+    .join(" ");
+}
+
+/* ============================================================
+   JOB ROLE MATCH
+============================================================ */
+
+function matchesRole(job, role) {
+  if (!role) return true;
+
+  const text = [
+    job.title,
+    job.company,
+    job.location,
+    ...(job.tags || []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  const keywords = ROLE_KEYWORDS[role];
+
+  if (keywords && keywords.length) {
+    return keywords.some((keyword) =>
+      text.includes(keyword.toLowerCase())
+    );
+  }
+
+  const roleName =
+    ROLE_MAP[role] || formatSlug(role);
+
+  return text.includes(roleName.toLowerCase());
+}
+
+/* ============================================================
+   LOCATION MATCH
+============================================================ */
+
+function matchesLocation(job, location) {
+  if (!location) return true;
+
+  const locationName = formatSlug(location)
+    .toLowerCase();
+
+  const jobText = [
+    job.location,
+    job.title,
+    job.company,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return jobText.includes(locationName);
+}
+
+/* ============================================================
+   COMPONENT
+============================================================ */
+
 export default function Jobs() {
-  const { portal } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const {
+    portal,
+    role,
+    location: roleLocation,
+  } = useParams();
+
+  const [
+    searchParams,
+    setSearchParams,
+  ] = useSearchParams();
+
   const navigate = useNavigate();
 
-  const { jobs, loading, error, isDemo, search } = useJobs();
+  const {
+    jobs,
+    loading,
+    error,
+    isDemo,
+    search,
+  } = useJobs();
+
+  /* ==========================================================
+     FILTER STATE
+  ========================================================== */
 
   const [days, setDays] = useState(3650);
-  const [remoteOnly, setRemoteOnly] = useState(false);
+
+  const [remoteOnly, setRemoteOnly] =
+    useState(false);
+
   const [jobType, setJobType] = useState([]);
-  const [experience, setExperience] = useState([]);
-  const [category, setCategory] = useState("");
-  const [keyword, setKeyword] = useState(searchParams.get("q") || "");
+
+  const [experience, setExperience] =
+    useState([]);
+
+  const [category, setCategory] =
+    useState("");
+
+  const [keyword, setKeyword] = useState(
+    searchParams.get("q") || ""
+  );
+
+  /* ==========================================================
+     PAGINATION
+  ========================================================== */
 
   const JOBS_PER_PAGE = 10;
 
@@ -38,20 +245,76 @@ export default function Jobs() {
     Number(searchParams.get("page")) || 1
   );
 
-  const whereLoc = searchParams.get("where") || "india";
+  /* ==========================================================
+     LOCATION
+  ========================================================== */
+
+  const whereLoc =
+    searchParams.get("where") ||
+    "india";
+
+  /* ==========================================================
+     PORTAL
+  ========================================================== */
 
   const portalMeta = portals.find(
     (p) => p.slug === portal
   );
 
+  /* ==========================================================
+     ROLE NAME
+  ========================================================== */
+
+  const roleName = role
+    ? ROLE_MAP[role] || formatSlug(role)
+    : "";
+
+  const roleLocationName = roleLocation
+    ? formatSlug(roleLocation)
+    : "";
+
+  /* ==========================================================
+     PAGE HEADING
+  ========================================================== */
+
   const heading = portalMeta
     ? portalMeta.name
+    : roleName
+    ? roleName
     : "All";
+
+  /* ==========================================================
+     INITIAL SEARCH
+  ========================================================== */
 
   useEffect(() => {
     const q = searchParams.get("q");
 
-    if (
+    /*
+      If this is a role landing URL:
+
+      /jobs/backend-developer
+
+      Search the backend role directly instead of
+      first loading generic "jobs".
+    */
+
+    if (role) {
+      search({
+        what: roleName,
+        where:
+          roleLocationName ||
+          whereLoc,
+      });
+    }
+
+    /*
+      Portal page:
+
+      /jobs/source/linkedin
+    */
+
+    else if (
       portalMeta &&
       portalMeta.query &&
       portalMeta.query.what
@@ -60,12 +323,26 @@ export default function Jobs() {
         what: portalMeta.query.what,
         where: whereLoc,
       });
-    } else if (q) {
+    }
+
+    /*
+      Search query:
+
+      /jobs?q=react
+    */
+
+    else if (q) {
       search({
         what: q,
         where: whereLoc,
       });
-    } else {
+    }
+
+    /*
+      Normal Jobs page.
+    */
+
+    else {
       search({
         what: "jobs",
         where: whereLoc,
@@ -73,11 +350,11 @@ export default function Jobs() {
     }
 
     setCategory("");
-    setKeyword(q || "");
 
-    const nextParams = new URLSearchParams(
-      searchParams
-    );
+    setKeyword(q || (role ? roleName : ""));
+
+    const nextParams =
+      new URLSearchParams(searchParams);
 
     nextParams.set("page", "1");
 
@@ -86,7 +363,11 @@ export default function Jobs() {
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [portal]);
+  }, [portal, role, roleLocation]);
+
+  /* ==========================================================
+     CATEGORY SEARCH
+  ========================================================== */
 
   useEffect(() => {
     if (category !== "") {
@@ -95,9 +376,8 @@ export default function Jobs() {
         where: whereLoc,
       });
 
-      const nextParams = new URLSearchParams(
-        searchParams
-      );
+      const nextParams =
+        new URLSearchParams(searchParams);
 
       nextParams.set("page", "1");
 
@@ -109,8 +389,16 @@ export default function Jobs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
+  /* ==========================================================
+     FILTER JOBS
+  ========================================================== */
+
   const filtered = useMemo(() => {
     return jobs.filter((job) => {
+      /* --------------------------------------------
+         DATE FILTER
+      -------------------------------------------- */
+
       if (
         job.postedDaysAgo != null &&
         job.postedDaysAgo > days
@@ -118,9 +406,20 @@ export default function Jobs() {
         return false;
       }
 
-      if (remoteOnly && !job.remote) {
+      /* --------------------------------------------
+         REMOTE FILTER
+      -------------------------------------------- */
+
+      if (
+        remoteOnly &&
+        !job.remote
+      ) {
         return false;
       }
+
+      /* --------------------------------------------
+         JOB TYPE FILTER
+      -------------------------------------------- */
 
       if (
         jobType.length &&
@@ -129,20 +428,32 @@ export default function Jobs() {
         return false;
       }
 
+      /* --------------------------------------------
+         EXPERIENCE FILTER
+      -------------------------------------------- */
+
       if (
         experience.length &&
         job.experienceBucket &&
         job.experienceBucket !== "unknown" &&
-        !experience.includes(job.experienceBucket)
+        !experience.includes(
+          job.experienceBucket
+        )
       ) {
         return false;
       }
 
-      if (keyword) {
+      /* --------------------------------------------
+         KEYWORD FILTER
+      -------------------------------------------- */
+
+      if (keyword && !role) {
         const searchText = (
           (job.title || "") +
           " " +
           (job.company || "") +
+          " " +
+          (job.location || "") +
           " " +
           (job.tags || []).join(" ")
         ).toLowerCase();
@@ -156,6 +467,31 @@ export default function Jobs() {
         }
       }
 
+      /* --------------------------------------------
+         ROLE FILTER
+      -------------------------------------------- */
+
+      if (
+        role &&
+        !matchesRole(job, role)
+      ) {
+        return false;
+      }
+
+      /* --------------------------------------------
+         LOCATION FILTER
+      -------------------------------------------- */
+
+      if (
+        roleLocation &&
+        !matchesLocation(
+          job,
+          roleLocation
+        )
+      ) {
+        return false;
+      }
+
       return true;
     });
   }, [
@@ -165,12 +501,19 @@ export default function Jobs() {
     jobType,
     experience,
     keyword,
+    role,
+    roleLocation,
   ]);
+
+  /* ==========================================================
+     PAGINATION CALCULATION
+  ========================================================== */
 
   const totalPages = Math.max(
     1,
     Math.ceil(
-      filtered.length / JOBS_PER_PAGE
+      filtered.length /
+        JOBS_PER_PAGE
     )
   );
 
@@ -180,15 +523,22 @@ export default function Jobs() {
   );
 
   const startIndex =
-    (safePage - 1) * JOBS_PER_PAGE;
+    (safePage - 1) *
+    JOBS_PER_PAGE;
 
   const endIndex =
-    startIndex + JOBS_PER_PAGE;
+    startIndex +
+    JOBS_PER_PAGE;
 
-  const paginatedJobs = filtered.slice(
-    startIndex,
-    endIndex
-  );
+  const paginatedJobs =
+    filtered.slice(
+      startIndex,
+      endIndex
+    );
+
+  /* ==========================================================
+     PAGE CHANGE
+  ========================================================== */
 
   function goToPage(page) {
     if (
@@ -198,9 +548,10 @@ export default function Jobs() {
       return;
     }
 
-    const nextParams = new URLSearchParams(
-      searchParams
-    );
+    const nextParams =
+      new URLSearchParams(
+        searchParams
+      );
 
     nextParams.set(
       "page",
@@ -215,28 +566,47 @@ export default function Jobs() {
     });
   }
 
+  /* ==========================================================
+     SEARCH
+  ========================================================== */
+
   function handleSearchSubmit() {
     setCategory("");
 
     search({
-      what: keyword || "jobs",
+      what:
+        keyword ||
+        "jobs",
       where: whereLoc,
     });
 
-    const nextParams = new URLSearchParams(
-      searchParams
-    );
+    const nextParams =
+      new URLSearchParams(
+        searchParams
+      );
 
     if (keyword) {
-      nextParams.set("q", keyword);
+      nextParams.set(
+        "q",
+        keyword
+      );
     } else {
       nextParams.delete("q");
     }
 
-    nextParams.set("page", "1");
+    nextParams.set(
+      "page",
+      "1"
+    );
 
-    setSearchParams(nextParams);
+    setSearchParams(
+      nextParams
+    );
   }
+
+  /* ==========================================================
+     ACTIVE FILTER COUNT
+  ========================================================== */
 
   const activeFilterCount =
     (days < 30 ? 1 : 0) +
@@ -245,15 +615,37 @@ export default function Jobs() {
     experience.length +
     (category ? 1 : 0);
 
-  const seoTitle =
-    heading === "All"
-      ? "Find Jobs in India — Latest Jobs & Career Opportunities | JobXPortal"
-      : `${heading} Jobs — Latest Career Opportunities | JobXPortal`;
+  /* ==========================================================
+     SEO
+  ========================================================== */
 
-  const seoDescription =
-    heading === "All"
-      ? "Search the latest jobs in India across multiple job sources and company career pages. Find IT, software, fresher, remote and other career opportunities on JobXPortal."
-      : `Find the latest ${heading} jobs and career opportunities on JobXPortal. Search, filter and explore job openings from multiple sources.`;
+  const seoTitle = role
+    ? roleLocationName
+      ? `${roleName} Jobs in ${roleLocationName} | JobXPortal`
+      : `${roleName} Jobs | JobXPortal`
+    : heading === "All"
+    ? "Find Jobs in India — Latest Jobs & Career Opportunities | JobXPortal"
+    : `${heading} Jobs — Latest Career Opportunities | JobXPortal`;
+
+  const seoDescription = role
+    ? roleLocationName
+      ? `Find the latest ${roleName} jobs in ${roleLocationName}. Search, filter and explore relevant opportunities on JobXPortal.`
+      : `Find the latest ${roleName} jobs on JobXPortal. Search, filter and explore relevant opportunities from multiple sources.`
+    : heading === "All"
+    ? "Search the latest jobs in India across multiple job sources and company career pages. Find IT, software, fresher, remote and other career opportunities on JobXPortal."
+    : `Find the latest ${heading} jobs and career opportunities on JobXPortal. Search, filter and explore job openings from multiple sources.`;
+
+  const seoPath = role
+    ? `/jobs/${role}${
+        roleLocation
+          ? `/${roleLocation}`
+          : ""
+      }`
+    : "/jobs";
+
+  /* ==========================================================
+     PAGE NUMBERS
+  ========================================================== */
 
   function getPageNumbers() {
     const pages = [];
@@ -306,12 +698,16 @@ export default function Jobs() {
     return pages;
   }
 
+  /* ==========================================================
+     RENDER
+  ========================================================== */
+
   return (
     <>
       <SEO
         title={seoTitle}
         description={seoDescription}
-        path="/jobs"
+        path={seoPath}
       />
 
       <Navbar />
@@ -331,72 +727,69 @@ export default function Jobs() {
               "32px 24px 64px",
           }}
         >
+          {/* ==================================================
+              BACK
+          ================================================== */}
+
           <button
-            onClick={() => navigate(-1)}
-            className="cursor-pointer"
+            onClick={() =>
+              navigate(-1)
+            }
             style={{
-              display: "inline-flex",
-              alignItems: "center",
+              display:
+                "inline-flex",
+              alignItems:
+                "center",
               gap: 8,
               fontFamily:
                 "JetBrains Mono",
               fontSize: 12,
               color: "#64748B",
-              background: "none",
+              background:
+                "transparent",
               border: "none",
-              marginBottom: 24,
+              cursor: "pointer",
+              marginBottom: 22,
               letterSpacing:
                 "0.08em",
-              transition:
-                "color 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color =
-                "#4F46E5";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color =
-                "#64748B";
             }}
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft
+              size={14}
+            />
             Back
           </button>
 
+          {/* ==================================================
+              BREADCRUMB
+          ================================================== */}
+
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
+              display:
+                "flex",
+              alignItems:
+                "center",
               gap: 8,
               fontFamily:
                 "JetBrains Mono",
               fontSize: 11,
               letterSpacing:
                 "0.1em",
-              color: "#94A3B8",
+              color: "#64748B",
               marginBottom: 8,
               textTransform:
                 "uppercase",
+              flexWrap: "wrap",
             }}
           >
             <Link
               to="/"
-              className="cursor-pointer"
               style={{
                 color: "#64748B",
                 textDecoration:
                   "none",
-                transition:
-                  "color 0.15s",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color =
-                  "#4F46E5")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color =
-                  "#64748B")
-              }
             >
               HOME
             </Link>
@@ -405,177 +798,154 @@ export default function Jobs() {
 
             <Link
               to="/jobs"
-              className="cursor-pointer"
               style={{
                 color: "#64748B",
                 textDecoration:
                   "none",
-                transition:
-                  "color 0.15s",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color =
-                  "#4F46E5")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color =
-                  "#64748B")
-              }
             >
-              {heading}
+              JOBS
             </Link>
 
             <span>/</span>
 
-            <button
-              onClick={() =>
-                search({
-                  what:
-                    keyword ||
-                    "jobs",
-                  where: "india",
-                })
-              }
-              className="cursor-pointer"
+            <span
               style={{
-                background:
-                  "none",
-                border: "none",
-                color: "#64748B",
-                fontFamily:
-                  "JetBrains Mono",
-                fontSize: 11,
-                letterSpacing:
-                  "0.1em",
-                padding: 0,
-                transition:
-                  "color 0.15s",
+                color: "#4F46E5",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color =
-                  "#4F46E5")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color =
-                  "#64748B")
-              }
             >
-              {whereLoc.toUpperCase()}
-            </button>
+              {heading}
+            </span>
+
+            {(roleLocationName ||
+              !role) && (
+              <>
+                <span>/</span>
+
+                <span
+                  style={{
+                    color: "#4F46E5",
+                  }}
+                >
+                  {roleLocationName ||
+                    whereLoc.toUpperCase()}
+                </span>
+              </>
+            )}
           </div>
 
-          <div
+          {/* ==================================================
+              HEADING
+          ================================================== */}
+
+          <h1
             style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent:
-                "space-between",
-              gap: 20,
-              marginBottom: 8,
-              flexWrap: "wrap",
+              fontFamily:
+                "Poppins, sans-serif",
+              fontSize:
+                "clamp(1.9rem, 4vw, 2.8rem)",
+              fontWeight: 800,
+              letterSpacing:
+                "-0.035em",
+              margin:
+                "0 0 6px",
+              color: "#0B132B",
             }}
           >
-            <div>
-              <h1
+            {heading} Jobs
+            {roleLocationName
+              ? ` in ${roleLocationName}`
+              : ""}
+          </h1>
+
+          {/* ==================================================
+              RESULT COUNT
+          ================================================== */}
+
+          {!loading && (
+            <p
+              style={{
+                color: "#64748B",
+                fontSize: 13,
+                marginBottom: 20,
+                fontFamily:
+                  "JetBrains Mono",
+              }}
+            >
+              Showing{" "}
+              <span
                 style={{
-                  fontSize:
-                    "clamp(1.8rem, 4vw, 2.8rem)",
-                  fontWeight: 800,
-                  color: "#0B132B",
-                  margin: 0,
-                  lineHeight: 1.15,
+                  color: "#4F46E5",
                 }}
               >
-                {heading} Jobs
-              </h1>
-
-              <p
-                style={{
-                  color: "#64748B",
-                  fontSize: 13,
-                  marginTop: 8,
-                  fontFamily:
-                    "JetBrains Mono",
-                }}
-              >
-                {!loading && (
-                  <>
-                    Showing{" "}
-                    <span
-                      style={{
-                        color:
-                          "#4F46E5",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {filtered.length ===
-                      0
-                        ? 0
-                        : startIndex +
-                          1}
-                      –
-                      {Math.min(
-                        endIndex,
-                        filtered.length
-                      )}
-                    </span>{" "}
-                    of{" "}
-                    <span
-                      style={{
-                        color:
-                          "#4F46E5",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {filtered.length}
-                    </span>{" "}
-                    jobs
-
-                    {activeFilterCount >
-                      0 && (
-                      <span
-                        style={{
-                          color:
-                            "#059669",
-                          marginLeft: 8,
-                        }}
-                      >
-                        (
-                        {
-                          activeFilterCount
-                        }{" "}
-                        filter
-                        {activeFilterCount >
-                        1
-                          ? "s"
-                          : ""}{" "}
-                        active)
-                      </span>
-                    )}
-                  </>
+                {filtered.length ===
+                0
+                  ? 0
+                  : startIndex + 1}
+                –
+                {Math.min(
+                  endIndex,
+                  filtered.length
                 )}
-              </p>
-            </div>
-          </div>
+              </span>{" "}
+              of{" "}
+              <span
+                style={{
+                  color: "#4F46E5",
+                }}
+              >
+                {filtered.length}
+              </span>{" "}
+              jobs
+              {activeFilterCount >
+                0 && (
+                <span
+                  style={{
+                    color: "#10B981",
+                    marginLeft: 8,
+                  }}
+                >
+                  (
+                  {
+                    activeFilterCount
+                  }{" "}
+                  filter
+                  {activeFilterCount >
+                  1
+                    ? "s"
+                    : ""}{" "}
+                  active)
+                </span>
+              )}
+            </p>
+          )}
+
+          {/* ==================================================
+              SEARCH
+          ================================================== */}
 
           <div
             className="jobs-search-row"
             style={{
-              display: "flex",
+              display:
+                "flex",
               gap: 10,
-              marginBottom: 26,
-              maxWidth: 700,
+              marginBottom: 24,
+              maxWidth: 600,
             }}
           >
             <div
               style={{
                 flex: 1,
-                minWidth: 0,
               }}
             >
               <SearchBar
-                keyword={keyword}
-                setKeyword={setKeyword}
+                keyword={
+                  keyword
+                }
+                setKeyword={
+                  setKeyword
+                }
               />
             </div>
 
@@ -583,51 +953,33 @@ export default function Jobs() {
               onClick={
                 handleSearchSubmit
               }
-              className="cursor-pointer"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent:
-                  "center",
-                gap: 7,
                 padding:
-                  "0 22px",
+                  "0 20px",
                 background:
                   "#4F46E5",
-                color: "#FFFFFF",
+                color:
+                  "#FFFFFF",
                 border: "none",
                 borderRadius: 12,
+                cursor:
+                  "pointer",
                 fontFamily:
                   "Poppins",
                 fontSize: 13,
                 fontWeight: 700,
                 flexShrink: 0,
-                transition:
-                  "all 0.2s ease",
                 boxShadow:
-                  "0 6px 18px rgba(79,70,229,0.16)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background =
-                  "#4338CA";
-                e.currentTarget.style.transform =
-                  "translateY(-1px)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 24px rgba(79,70,229,0.22)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background =
-                  "#4F46E5";
-                e.currentTarget.style.transform =
-                  "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 6px 18px rgba(79,70,229,0.16)";
+                  "0 7px 18px rgba(79,70,229,0.14)",
               }}
             >
-              <Search size={15} />
               Search
             </button>
           </div>
+
+          {/* ==================================================
+              DEMO
+          ================================================== */}
 
           {isDemo && (
             <DemoBanner
@@ -635,112 +987,144 @@ export default function Jobs() {
             />
           )}
 
+          {/* ==================================================
+              MAIN LAYOUT
+          ================================================== */}
+
           <div
             className="jobs-layout"
             style={{
-              display: "grid",
+              display:
+                "grid",
               gridTemplateColumns:
                 "280px 1fr",
               gap: 24,
-              alignItems: "start",
+              alignItems:
+                "start",
             }}
           >
+            {/* ==================================================
+                SIDEBAR
+            ================================================== */}
+
             <div
               className="sidebar-wrapper"
               style={{
-                position: "sticky",
+                position:
+                  "sticky",
                 top: 80,
-                height: "fit-content",
-                alignSelf: "start",
+                height:
+                  "fit-content",
+                alignSelf:
+                  "start",
                 zIndex: 10,
               }}
             >
               <FilterSidebar
                 days={days}
-                setDays={setDays}
-                remoteOnly={remoteOnly}
+                setDays={
+                  setDays
+                }
+                remoteOnly={
+                  remoteOnly
+                }
                 setRemoteOnly={
                   setRemoteOnly
                 }
-                jobType={jobType}
-                setJobType={setJobType}
+                jobType={
+                  jobType
+                }
+                setJobType={
+                  setJobType
+                }
                 experience={
                   experience
                 }
                 setExperience={
                   setExperience
                 }
-                category={category}
+                category={
+                  category
+                }
                 setCategory={
                   setCategory
                 }
               />
             </div>
 
+            {/* ==================================================
+                JOB LIST
+            ================================================== */}
+
             <div
               style={{
-                display: "flex",
+                display:
+                  "flex",
                 flexDirection:
                   "column",
-                gap: 14,
+                gap: 12,
               }}
             >
               {loading ? (
                 <JobsLoading />
               ) : paginatedJobs.length ===
                 0 ? (
+                /* ============================================
+                   NO RESULTS
+                ============================================ */
+
                 <div
                   style={{
                     background:
                       "#FFFFFF",
                     border:
                       "1px solid #E2E6F0",
-                    borderRadius: 18,
+                    borderRadius: 16,
                     padding:
-                      "56px 24px",
+                      "48px 24px",
                     textAlign:
                       "center",
                     boxShadow:
-                      "0 4px 18px rgba(15,23,42,0.04)",
+                      "0 4px 18px rgba(15,23,42,0.035)",
                   }}
                 >
                   <div
                     style={{
                       width: 52,
                       height: 52,
-                      borderRadius:
-                        14,
+                      margin:
+                        "0 auto 14px",
+                      borderRadius: 14,
                       background:
-                        "#F4F3FF",
-                      border:
-                        "1px solid #E0E7FF",
-                      display: "flex",
+                        "#EEF2FF",
+                      display:
+                        "flex",
                       alignItems:
                         "center",
                       justifyContent:
                         "center",
-                      margin:
-                        "0 auto 16px",
                       color:
                         "#4F46E5",
+                      fontSize: 22,
                     }}
                   >
-                    <Search
-                      size={22}
-                    />
+                    💼
                   </div>
 
                   <p
                     style={{
                       color:
                         "#0B132B",
-                      fontSize: 16,
-                      fontWeight: 700,
                       marginBottom: 8,
+                      fontFamily:
+                        "Poppins",
+                      fontWeight:
+                        700,
+                      fontSize: 15,
                     }}
                   >
-                    No jobs match your
-                    filters.
+                    No jobs match
+                    your filters.
                   </p>
 
                   <p
@@ -750,25 +1134,69 @@ export default function Jobs() {
                       fontSize: 13,
                       fontFamily:
                         "JetBrains Mono",
+                      marginBottom: 18,
                     }}
                   >
                     Try a different
-                    category or clear
-                    your filters.
+                    category or
+                    clear your
+                    filters.
                   </p>
+
+                  {role && (
+                    <Link
+                      to="/jobs"
+                      style={{
+                        display:
+                          "inline-flex",
+                        alignItems:
+                          "center",
+                        padding:
+                          "10px 17px",
+                        borderRadius:
+                          9,
+                        background:
+                          "#4F46E5",
+                        color:
+                          "#FFFFFF",
+                        textDecoration:
+                          "none",
+                        fontFamily:
+                          "Poppins",
+                        fontSize: 12,
+                        fontWeight:
+                          700,
+                      }}
+                    >
+                      Browse All Jobs
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <>
+                  {/* ==========================================
+                      JOB CARDS
+                  ========================================== */}
+
                   {paginatedJobs.map(
                     (job) => (
                       <JobCard
-                        key={job.id}
-                        job={job}
+                        key={
+                          job.id
+                        }
+                        job={
+                          job
+                        }
                       />
                     )
                   )}
 
-                  {totalPages > 1 && (
+                  {/* ==========================================
+                      PAGINATION
+                  ========================================== */}
+
+                  {totalPages >
+                    1 && (
                     <div
                       className="pagination"
                       style={{
@@ -781,21 +1209,23 @@ export default function Jobs() {
                         gap: 8,
                         flexWrap:
                           "wrap",
-                        marginTop: 20,
-                        paddingTop: 12,
+                        marginTop: 24,
+                        paddingTop: 16,
                       }}
                     >
+                      {/* PREVIOUS */}
+
                       <button
                         onClick={() =>
                           goToPage(
-                            safePage - 1
+                            safePage -
+                              1
                           )
                         }
                         disabled={
                           safePage ===
                           1
                         }
-                        className="cursor-pointer"
                         style={{
                           padding:
                             "10px 16px",
@@ -803,9 +1233,15 @@ export default function Jobs() {
                             "#FFFFFF",
                           border:
                             "1px solid #E2E6F0",
-                          borderRadius: 10,
+                          borderRadius:
+                            10,
                           color:
-                            "#344054",
+                            "#0B132B",
+                          cursor:
+                            safePage ===
+                            1
+                              ? "not-allowed"
+                              : "pointer",
                           opacity:
                             safePage ===
                             1
@@ -814,13 +1250,14 @@ export default function Jobs() {
                           fontFamily:
                             "Poppins",
                           fontSize: 13,
-                          fontWeight: 600,
-                          transition:
-                            "all 0.15s",
+                          fontWeight:
+                            600,
                         }}
                       >
                         ← Previous
                       </button>
+
+                      {/* PAGE NUMBERS */}
 
                       {getPageNumbers().map(
                         (
@@ -836,7 +1273,7 @@ export default function Jobs() {
                                 key={`dots-${index}`}
                                 style={{
                                   color:
-                                    "#94A3B8",
+                                    "#64748B",
                                   padding:
                                     "0 4px",
                                 }}
@@ -846,49 +1283,47 @@ export default function Jobs() {
                             );
                           }
 
-                          const active =
-                            page ===
-                            safePage;
-
                           return (
                             <button
-                              key={page}
+                              key={
+                                page
+                              }
                               onClick={() =>
                                 goToPage(
                                   page
                                 )
                               }
-                              className="cursor-pointer"
                               style={{
                                 minWidth: 40,
                                 height: 40,
                                 padding:
                                   "0 10px",
                                 background:
-                                  active
+                                  page ===
+                                  safePage
                                     ? "#4F46E5"
                                     : "#FFFFFF",
                                 color:
-                                  active
+                                  page ===
+                                  safePage
                                     ? "#FFFFFF"
-                                    : "#344054",
+                                    : "#0B132B",
                                 border:
                                   `1px solid ${
-                                    active
+                                    page ===
+                                    safePage
                                       ? "#4F46E5"
                                       : "#E2E6F0"
                                   }`,
-                                borderRadius: 10,
+                                borderRadius:
+                                  10,
+                                cursor:
+                                  "pointer",
                                 fontFamily:
                                   "Poppins",
                                 fontSize: 13,
-                                fontWeight: 700,
-                                transition:
-                                  "all 0.15s",
-                                boxShadow:
-                                  active
-                                    ? "0 6px 16px rgba(79,70,229,0.18)"
-                                    : "none",
+                                fontWeight:
+                                  700,
                               }}
                             >
                               {page}
@@ -897,17 +1332,19 @@ export default function Jobs() {
                         }
                       )}
 
+                      {/* NEXT */}
+
                       <button
                         onClick={() =>
                           goToPage(
-                            safePage + 1
+                            safePage +
+                              1
                           )
                         }
                         disabled={
                           safePage ===
                           totalPages
                         }
-                        className="cursor-pointer"
                         style={{
                           padding:
                             "10px 16px",
@@ -915,9 +1352,15 @@ export default function Jobs() {
                             "#FFFFFF",
                           border:
                             "1px solid #E2E6F0",
-                          borderRadius: 10,
+                          borderRadius:
+                            10,
                           color:
-                            "#344054",
+                            "#0B132B",
+                          cursor:
+                            safePage ===
+                            totalPages
+                              ? "not-allowed"
+                              : "pointer",
                           opacity:
                             safePage ===
                             totalPages
@@ -926,7 +1369,8 @@ export default function Jobs() {
                           fontFamily:
                             "Poppins",
                           fontSize: 13,
-                          fontWeight: 600,
+                          fontWeight:
+                            600,
                         }}
                       >
                         Next →
@@ -942,6 +1386,10 @@ export default function Jobs() {
 
       <Footer />
 
+      {/* ========================================================
+          RESPONSIVE
+      ======================================================== */}
+
       <style>{`
         @media (max-width: 768px) {
           .jobs-layout {
@@ -950,10 +1398,6 @@ export default function Jobs() {
 
           .sidebar-wrapper {
             position: static !important;
-          }
-
-          .jobs-search-row {
-            max-width: 100% !important;
           }
 
           .pagination {
@@ -965,14 +1409,19 @@ export default function Jobs() {
           }
         }
 
-        @media (max-width: 520px) {
+        @media (max-width: 560px) {
+          .jobs-search-row {
+            max-width: 100% !important;
+          }
+        }
+
+        @media (max-width: 480px) {
           .jobs-search-row {
             flex-direction: column !important;
           }
 
           .jobs-search-row button {
-            min-height: 46px;
-            width: 100%;
+            min-height: 44px;
           }
         }
       `}</style>

@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Jobs from "./pages/Jobs";
 import JobDetails from "./pages/JobDetails";
-import JobLanding from "./pages/JobLanding";
 import Companies from "./pages/Companies";
 import Remote from "./pages/Remote";
 import About from "./pages/About";
@@ -35,6 +34,7 @@ import AuthGate from "./components/AuthGate";
 import EmployerGate from "./components/EmployerGate";
 import SEO from "./components/SEO";
 import Chatbot from "./components/Chatbot";
+import Candidates from "./pages/Candidates";
 
 function App() {
   return (
@@ -43,8 +43,15 @@ function App() {
         <ScrollToTop />
 
         <Routes>
+          {/* ==================================================
+              PUBLIC PROFILE
+          ================================================== */}
 
           <Route path="/u/:userId" element={<PublicProfile />} />
+
+          {/* ==================================================
+              HOME
+          ================================================== */}
 
           <Route
             path="/"
@@ -55,10 +62,24 @@ function App() {
                   description="Find jobs from multiple sources, discover company career opportunities, post jobs as an employer, and use AI-powered career tools with JobXPortal."
                   path="/"
                 />
+
                 <Home />
               </>
             }
           />
+
+          <Route
+            path="/candidates"
+            element={
+              <EmployerGate featureName="Browse Candidates">
+                <Candidates />
+              </EmployerGate>
+            }
+          />
+
+          {/* ==================================================
+              ALL JOBS
+          ================================================== */}
 
           <Route
             path="/jobs"
@@ -69,10 +90,19 @@ function App() {
                   description="Search the latest jobs in India across multiple job sources and company career pages. Find IT, software, fresher, remote and other career opportunities on JobXPortal."
                   path="/jobs"
                 />
+
                 <Jobs />
               </>
             }
           />
+
+          {/* ==================================================
+              JOB SOURCE
+              
+              Example:
+              /jobs/source/linkedin
+              /jobs/source/naukri
+          ================================================== */}
 
           <Route
             path="/jobs/source/:portal"
@@ -83,14 +113,36 @@ function App() {
                   description="Explore the latest job opportunities and career openings on JobXPortal."
                   path="/jobs"
                 />
+
                 <Jobs />
               </>
             }
           />
 
-          <Route path="/jobs/:role/:location" element={<JobLanding />} />
+          {/* ==================================================
+              ROLE + LOCATION JOBS
+              
+              Example:
+              /jobs/backend-developer/hyderabad
+              /jobs/frontend-developer/bangalore
+          ================================================== */}
 
-          <Route path="/jobs/:role" element={<JobLanding />} />
+          <Route path="/jobs/:role/:location" element={<Jobs />} />
+
+          {/* ==================================================
+              ROLE JOBS
+              
+              Example:
+              /jobs/backend-developer
+              /jobs/frontend-developer
+              /jobs/java-developer
+          ================================================== */}
+
+          <Route path="/jobs/:role" element={<Jobs />} />
+
+          {/* ==================================================
+              JOB DETAILS
+          ================================================== */}
 
           <Route
             path="/job/:id"
@@ -101,10 +153,15 @@ function App() {
                   description="View job details, requirements, location and application information on JobXPortal."
                   path="/job"
                 />
+
                 <JobDetails />
               </>
             }
           />
+
+          {/* ==================================================
+              COMPANIES
+          ================================================== */}
 
           <Route
             path="/companies"
@@ -115,10 +172,15 @@ function App() {
                   description="Explore companies, discover career opportunities and find jobs from employers hiring across India with JobXPortal."
                   path="/companies"
                 />
+
                 <Companies />
               </>
             }
           />
+
+          {/* ==================================================
+              COMPANY PROFILE
+          ================================================== */}
 
           <Route
             path="/company/:employerId"
@@ -129,10 +191,15 @@ function App() {
                   description="Explore company information, job openings and career opportunities on JobXPortal."
                   path="/company"
                 />
+
                 <CompanyProfile />
               </>
             }
           />
+
+          {/* ==================================================
+              REMOTE
+          ================================================== */}
 
           <Route
             path="/remote"
@@ -143,10 +210,15 @@ function App() {
                   description="Find remote and work-from-home job opportunities in India. Search remote software, IT, developer and other jobs on JobXPortal."
                   path="/remote"
                 />
+
                 <Remote />
               </>
             }
           />
+
+          {/* ==================================================
+              SALARY INSIGHTS
+          ================================================== */}
 
           <Route
             path="/salary-insights"
@@ -157,10 +229,15 @@ function App() {
                   description="Explore salary insights and compare compensation for different jobs, skills and career opportunities."
                   path="/salary-insights"
                 />
+
                 <SalaryInsights />
               </>
             }
           />
+
+          {/* ==================================================
+              POST JOB
+          ================================================== */}
 
           <Route
             path="/post-job"
@@ -172,12 +249,17 @@ function App() {
                   path="/post-job"
                   noindex
                 />
+
                 <EmployerGate featureName="Post a Job">
                   <PostJob />
                 </EmployerGate>
               </>
             }
           />
+
+          {/* ==================================================
+              ABOUT
+          ================================================== */}
 
           <Route
             path="/about"
@@ -188,10 +270,15 @@ function App() {
                   description="Learn about JobXPortal, an all-in-one career platform connecting job seekers with opportunities and helping employers find talent."
                   path="/about"
                 />
+
                 <About />
               </>
             }
           />
+
+          {/* ==================================================
+              CONTACT
+          ================================================== */}
 
           <Route
             path="/contact"
@@ -202,10 +289,15 @@ function App() {
                   description="Get in touch with the JobXPortal team for questions, feedback, partnerships and support."
                   path="/contact"
                 />
+
                 <Contact />
               </>
             }
           />
+
+          {/* ==================================================
+              FAQ
+          ================================================== */}
 
           <Route
             path="/faqs"
@@ -216,10 +308,15 @@ function App() {
                   description="Find answers to frequently asked questions about JobXPortal, job searching, employer job posting and career tools."
                   path="/faqs"
                 />
+
                 <FAQ />
               </>
             }
           />
+
+          {/* ==================================================
+              TERMS
+          ================================================== */}
 
           <Route
             path="/terms"
@@ -230,10 +327,15 @@ function App() {
                   description="Read the terms and conditions for using JobXPortal."
                   path="/terms"
                 />
+
                 <Terms />
               </>
             }
           />
+
+          {/* ==================================================
+              PRIVACY
+          ================================================== */}
 
           <Route
             path="/privacy"
@@ -244,20 +346,30 @@ function App() {
                   description="Read the JobXPortal privacy policy and learn how information is handled."
                   path="/privacy"
                 />
+
                 <Privacy />
               </>
             }
           />
+
+          {/* ==================================================
+              LOGIN
+          ================================================== */}
 
           <Route
             path="/login"
             element={
               <>
                 <SEO title="Login | JobXPortal" path="/login" noindex />
+
                 <Login />
               </>
             }
           />
+
+          {/* ==================================================
+              REGISTER
+          ================================================== */}
 
           <Route
             path="/register"
@@ -268,10 +380,15 @@ function App() {
                   path="/register"
                   noindex
                 />
+
                 <Register />
               </>
             }
           />
+
+          {/* ==================================================
+              FORGOT PASSWORD
+          ================================================== */}
 
           <Route
             path="/forgot-password"
@@ -282,10 +399,15 @@ function App() {
                   path="/forgot-password"
                   noindex
                 />
+
                 <ForgotPassword />
               </>
             }
           />
+
+          {/* ==================================================
+              RESET PASSWORD
+          ================================================== */}
 
           <Route
             path="/reset-password"
@@ -296,10 +418,15 @@ function App() {
                   path="/reset-password"
                   noindex
                 />
+
                 <ResetPassword />
               </>
             }
           />
+
+          {/* ==================================================
+              VERIFY EMAIL
+          ================================================== */}
 
           <Route
             path="/verify-email/:token"
@@ -310,10 +437,15 @@ function App() {
                   path="/verify-email"
                   noindex
                 />
+
                 <VerifyEmail />
               </>
             }
           />
+
+          {/* ==================================================
+              RESUME MATCH
+          ================================================== */}
 
           <Route
             path="/resume-match"
@@ -324,12 +456,17 @@ function App() {
                   path="/resume-match"
                   noindex
                 />
+
                 <AuthGate featureName="Resume Match">
                   <ResumeMatch />
                 </AuthGate>
               </>
             }
           />
+
+          {/* ==================================================
+              RESUME BUILDER
+          ================================================== */}
 
           <Route
             path="/resume-builder"
@@ -340,12 +477,17 @@ function App() {
                   path="/resume-builder"
                   noindex
                 />
+
                 <AuthGate featureName="Resume Builder">
                   <ResumeBuilder />
                 </AuthGate>
               </>
             }
           />
+
+          {/* ==================================================
+              INTERVIEW PREP
+          ================================================== */}
 
           <Route
             path="/interview-prep"
@@ -356,12 +498,17 @@ function App() {
                   path="/interview-prep"
                   noindex
                 />
+
                 <AuthGate featureName="Interview Prep">
                   <InterviewPrep />
                 </AuthGate>
               </>
             }
           />
+
+          {/* ==================================================
+              COVER LETTER
+          ================================================== */}
 
           <Route
             path="/cover-letter"
@@ -372,12 +519,17 @@ function App() {
                   path="/cover-letter"
                   noindex
                 />
+
                 <AuthGate featureName="Cover Letter Generator">
                   <CoverLetter />
                 </AuthGate>
               </>
             }
           />
+
+          {/* ==================================================
+              TRACKER
+          ================================================== */}
 
           <Route
             path="/tracker"
@@ -388,12 +540,17 @@ function App() {
                   path="/tracker"
                   noindex
                 />
+
                 <AuthGate featureName="Job Tracker">
                   <Tracker />
                 </AuthGate>
               </>
             }
           />
+
+          {/* ==================================================
+              BOOKMARKS
+          ================================================== */}
 
           <Route
             path="/bookmarks"
@@ -404,6 +561,7 @@ function App() {
                   path="/bookmarks"
                   noindex
                 />
+
                 <AuthGate featureName="Bookmarks">
                   <Bookmarks />
                 </AuthGate>
@@ -411,17 +569,26 @@ function App() {
             }
           />
 
+          {/* ==================================================
+              PROFILE
+          ================================================== */}
+
           <Route
             path="/profile"
             element={
               <>
                 <SEO title="My Profile | JobXPortal" path="/profile" noindex />
+
                 <AuthGate featureName="Profile">
                   <Profile />
                 </AuthGate>
               </>
             }
           />
+
+          {/* ==================================================
+              EMPLOYER DASHBOARD
+          ================================================== */}
 
           <Route
             path="/employer/dashboard"
@@ -432,6 +599,7 @@ function App() {
                   path="/employer/dashboard"
                   noindex
                 />
+
                 <EmployerGate featureName="Employer Dashboard">
                   <EmployerDashboard />
                 </EmployerGate>
