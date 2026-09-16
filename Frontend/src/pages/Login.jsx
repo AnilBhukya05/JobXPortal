@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
 import {
   Eye,
   EyeOff,
@@ -7,16 +12,22 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
+
 import { motion } from "framer-motion";
+
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const { login } = useAuth();
-  const from = location.state?.from || "/";
+
+  const from =
+    location.state?.from || "/";
 
   const [form, setForm] = useState({
     email: "",
@@ -24,9 +35,14 @@ export default function Login() {
     remember: false,
   });
 
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [showPw, setShowPw] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
 
   function handleChange(e) {
     const val =
@@ -42,10 +58,14 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
     setError("");
 
     if (!form.email || !form.password) {
-      setError("Please fill in all fields.");
+      setError(
+        "Please fill in all fields."
+      );
+
       return;
     }
 
@@ -60,9 +80,36 @@ export default function Login() {
     if (result.error) {
       setError(result.error);
       setLoading(false);
-    } else {
-      navigate(from, { replace: true });
+      return;
     }
+
+    /*
+     * ROLE-BASED REDIRECT
+     *
+     * Admin     → /admin
+     * Employer  → previous requested page
+     * Seeker    → previous requested page
+     */
+
+    if (result.user?.role === "admin") {
+      navigate("/admin", {
+        replace: true,
+      });
+
+      return;
+    }
+
+    if (result.user?.role === "employer") {
+      navigate(from, {
+        replace: true,
+      });
+
+      return;
+    }
+
+    navigate(from, {
+      replace: true,
+    });
   }
 
   return (
@@ -161,7 +208,8 @@ export default function Login() {
                 marginBottom: 32,
               }}
             >
-              Sign in to save roles, get faster search, and pick up right where
+              Sign in to save roles, get faster
+              search, and pick up right where
               you left off.
             </p>
 
@@ -251,11 +299,11 @@ export default function Login() {
                 marginBottom: 32,
               }}
             >
-              Sign in to access your tools and saved jobs.
+              Sign in to access your tools and
+              saved jobs.
             </p>
 
             <form onSubmit={handleSubmit}>
-
               {/* EMAIL */}
 
               <div className="float-field">
@@ -306,7 +354,8 @@ export default function Login() {
                     position: "absolute",
                     right: 0,
                     top: 18,
-                    background: "transparent",
+                    background:
+                      "transparent",
                     border: "none",
                     cursor: "pointer",
                     color: "#64748B",
@@ -335,7 +384,8 @@ export default function Login() {
                     color: "#64748B",
                     fontFamily: "Poppins",
                     fontSize: 12.5,
-                    textDecoration: "none",
+                    textDecoration:
+                      "none",
                     transition:
                       "color 0.2s",
                   }}
@@ -374,7 +424,9 @@ export default function Login() {
                   <input
                     type="checkbox"
                     name="remember"
-                    checked={form.remember}
+                    checked={
+                      form.remember
+                    }
                     onChange={handleChange}
                     style={{
                       accentColor:
@@ -426,7 +478,8 @@ export default function Login() {
                   width: "100%",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent:
+                    "center",
                   gap: 8,
                   padding: "13px",
                   background: "#4F46E5",
@@ -466,12 +519,15 @@ export default function Login() {
                         animation:
                           "spin 1s linear infinite",
                       }}
-                    />{" "}
+                    />
+
                     Signing in...
                   </>
                 ) : (
                   <>
-                    <LogIn size={17} /> Sign In
+                    <LogIn size={17} />
+
+                    Sign In
                   </>
                 )}
               </motion.button>
@@ -492,7 +548,8 @@ export default function Login() {
                   to="/register"
                   style={{
                     color: "#4F46E5",
-                    textDecoration: "none",
+                    textDecoration:
+                      "none",
                     fontWeight: 600,
                   }}
                 >

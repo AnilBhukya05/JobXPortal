@@ -262,7 +262,7 @@ export default function Contact() {
                 {
                   icon: Mail,
                   title: "Email",
-                  value: "anilbhukya1106@gmail.com",
+                  value: "hello.jobxportal@gmail.com",
                   sub: "We reply within 24 hours",
                 },
                 {
@@ -446,7 +446,7 @@ export default function Contact() {
                 >
                   {/* TICKET TOP */}
                   <div className="flex items-center justify-between mb-6 font-mono text-xs">
-                    <span className="text-[#64748B] tracking-widest">
+                    <span className="text-[#64748B] tracking-widest ">
                       NEW MESSAGE
                     </span>
 

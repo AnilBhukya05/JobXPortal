@@ -27,6 +27,18 @@ import CompanyProfile from "./pages/CompanyProfile";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import PublicProfile from "./pages/PublicProfile";
+import Candidates from "./pages/Candidates";
+
+import Careers from "./pages/Careers";
+import CareerDetails from "./pages/CareerDetails";
+import CareerApplication from "./pages/CareerApplication";
+
+import AdminLogin from "./pages/AdminLogin";
+import AdminLayout from "./pages/AdminLayout";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminCareers from "./pages/AdminCareers";
+import AdminCareerForm from "./pages/AdminCareerForm";
+import AdminApplications from "./pages/AdminApplications";
 
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
@@ -34,7 +46,7 @@ import AuthGate from "./components/AuthGate";
 import EmployerGate from "./components/EmployerGate";
 import SEO from "./components/SEO";
 import Chatbot from "./components/Chatbot";
-import Candidates from "./pages/Candidates";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   return (
@@ -43,16 +55,14 @@ function App() {
         <ScrollToTop />
 
         <Routes>
-          {/* ==================================================
-              PUBLIC PROFILE
-          ================================================== */}
 
-          <Route path="/u/:userId" element={<PublicProfile />} />
+          {/* Public profile */}
+          <Route
+            path="/u/:userId"
+            element={<PublicProfile />}
+          />
 
-          {/* ==================================================
-              HOME
-          ================================================== */}
-
+          {/* Home */}
           <Route
             path="/"
             element={
@@ -68,6 +78,7 @@ function App() {
             }
           />
 
+          {/* Candidates */}
           <Route
             path="/candidates"
             element={
@@ -77,10 +88,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              ALL JOBS
-          ================================================== */}
-
+          {/* Jobs */}
           <Route
             path="/jobs"
             element={
@@ -96,14 +104,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              JOB SOURCE
-              
-              Example:
-              /jobs/source/linkedin
-              /jobs/source/naukri
-          ================================================== */}
-
+          {/* Job source */}
           <Route
             path="/jobs/source/:portal"
             element={
@@ -119,31 +120,19 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              ROLE + LOCATION JOBS
-              
-              Example:
-              /jobs/backend-developer/hyderabad
-              /jobs/frontend-developer/bangalore
-          ================================================== */}
+          {/* Role and location */}
+          <Route
+            path="/jobs/:role/:location"
+            element={<Jobs />}
+          />
 
-          <Route path="/jobs/:role/:location" element={<Jobs />} />
+          {/* Role jobs */}
+          <Route
+            path="/jobs/:role"
+            element={<Jobs />}
+          />
 
-          {/* ==================================================
-              ROLE JOBS
-              
-              Example:
-              /jobs/backend-developer
-              /jobs/frontend-developer
-              /jobs/java-developer
-          ================================================== */}
-
-          <Route path="/jobs/:role" element={<Jobs />} />
-
-          {/* ==================================================
-              JOB DETAILS
-          ================================================== */}
-
+          {/* Job details */}
           <Route
             path="/job/:id"
             element={
@@ -159,10 +148,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              COMPANIES
-          ================================================== */}
-
+          {/* Companies */}
           <Route
             path="/companies"
             element={
@@ -178,10 +164,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              COMPANY PROFILE
-          ================================================== */}
-
+          {/* Company profile */}
           <Route
             path="/company/:employerId"
             element={
@@ -197,10 +180,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              REMOTE
-          ================================================== */}
-
+          {/* Remote */}
           <Route
             path="/remote"
             element={
@@ -216,10 +196,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              SALARY INSIGHTS
-          ================================================== */}
-
+          {/* Salary insights */}
           <Route
             path="/salary-insights"
             element={
@@ -235,10 +212,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              POST JOB
-          ================================================== */}
-
+          {/* Post job */}
           <Route
             path="/post-job"
             element={
@@ -257,10 +231,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              ABOUT
-          ================================================== */}
-
+          {/* About */}
           <Route
             path="/about"
             element={
@@ -276,10 +247,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              CONTACT
-          ================================================== */}
-
+          {/* Contact */}
           <Route
             path="/contact"
             element={
@@ -295,10 +263,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              FAQ
-          ================================================== */}
-
+          {/* FAQ */}
           <Route
             path="/faqs"
             element={
@@ -314,10 +279,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              TERMS
-          ================================================== */}
-
+          {/* Terms */}
           <Route
             path="/terms"
             element={
@@ -333,10 +295,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              PRIVACY
-          ================================================== */}
-
+          {/* Privacy */}
           <Route
             path="/privacy"
             element={
@@ -352,25 +311,23 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              LOGIN
-          ================================================== */}
-
+          {/* Login */}
           <Route
             path="/login"
             element={
               <>
-                <SEO title="Login | JobXPortal" path="/login" noindex />
+                <SEO
+                  title="Login | JobXPortal"
+                  path="/login"
+                  noindex
+                />
 
                 <Login />
               </>
             }
           />
 
-          {/* ==================================================
-              REGISTER
-          ================================================== */}
-
+          {/* Register */}
           <Route
             path="/register"
             element={
@@ -386,10 +343,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              FORGOT PASSWORD
-          ================================================== */}
-
+          {/* Forgot password */}
           <Route
             path="/forgot-password"
             element={
@@ -405,10 +359,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              RESET PASSWORD
-          ================================================== */}
-
+          {/* Reset password */}
           <Route
             path="/reset-password"
             element={
@@ -424,10 +375,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              VERIFY EMAIL
-          ================================================== */}
-
+          {/* Verify email */}
           <Route
             path="/verify-email/:token"
             element={
@@ -443,10 +391,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              RESUME MATCH
-          ================================================== */}
-
+          {/* Resume match */}
           <Route
             path="/resume-match"
             element={
@@ -464,10 +409,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              RESUME BUILDER
-          ================================================== */}
-
+          {/* Resume builder */}
           <Route
             path="/resume-builder"
             element={
@@ -485,10 +427,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              INTERVIEW PREP
-          ================================================== */}
-
+          {/* Interview prep */}
           <Route
             path="/interview-prep"
             element={
@@ -506,10 +445,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              COVER LETTER
-          ================================================== */}
-
+          {/* Cover letter */}
           <Route
             path="/cover-letter"
             element={
@@ -527,10 +463,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              TRACKER
-          ================================================== */}
-
+          {/* Tracker */}
           <Route
             path="/tracker"
             element={
@@ -548,10 +481,7 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              BOOKMARKS
-          ================================================== */}
-
+          {/* Bookmarks */}
           <Route
             path="/bookmarks"
             element={
@@ -569,15 +499,16 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              PROFILE
-          ================================================== */}
-
+          {/* Profile */}
           <Route
             path="/profile"
             element={
               <>
-                <SEO title="My Profile | JobXPortal" path="/profile" noindex />
+                <SEO
+                  title="My Profile | JobXPortal"
+                  path="/profile"
+                  noindex
+                />
 
                 <AuthGate featureName="Profile">
                   <Profile />
@@ -586,10 +517,100 @@ function App() {
             }
           />
 
-          {/* ==================================================
-              EMPLOYER DASHBOARD
-          ================================================== */}
+          {/* Careers */}
+          <Route
+            path="/careers"
+            element={
+              <>
+                <SEO
+                  title="Careers at JobXPortal — Join Our Team"
+                  description="Explore career opportunities at JobXPortal and join our team building the future of job search and hiring."
+                  path="/careers"
+                />
 
+                <Careers />
+              </>
+            }
+          />
+
+          <Route
+            path="/careers/:slug"
+            element={
+              <>
+                <SEO
+                  title="Career Opportunity | JobXPortal"
+                  description="Explore this career opportunity at JobXPortal."
+                  path="/careers"
+                />
+
+                <CareerDetails />
+              </>
+            }
+          />
+
+          <Route
+            path="/careers/:slug/apply"
+            element={
+              <>
+                <SEO
+                  title="Apply | JobXPortal Careers"
+                  description="Apply for a career opportunity at JobXPortal."
+                  path="/careers"
+                  noindex
+                />
+
+                <CareerApplication />
+              </>
+            }
+          />
+
+          {/* Admin login */}
+          <Route
+            path="/admin/login"
+            element={<AdminLogin />}
+          />
+
+          {/* Admin panel */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route
+              index
+              element={<AdminDashboard />}
+            />
+
+            <Route
+              path="dashboard"
+              element={<AdminDashboard />}
+            />
+
+            <Route
+              path="careers"
+              element={<AdminCareers />}
+            />
+
+            <Route
+              path="careers/new"
+              element={<AdminCareerForm />}
+            />
+
+            <Route
+              path="careers/:id/edit"
+              element={<AdminCareerForm />}
+            />
+
+            <Route
+              path="applications"
+              element={<AdminApplications />}
+            />
+          </Route>
+
+          {/* Employer dashboard */}
           <Route
             path="/employer/dashboard"
             element={
@@ -606,6 +627,7 @@ function App() {
               </>
             }
           />
+
         </Routes>
 
         <ScrollToTopButton />

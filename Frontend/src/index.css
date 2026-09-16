@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #09090B;
+  --bg: #FFFFFF;
   --surface: #111113;
   --surface2: #18181B;
   --border: #27272A;
@@ -45,6 +45,28 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
+body {
+  background:
+    radial-gradient(
+      ellipse 70% 80% at 0% 45%,
+      rgba(219, 234, 254, 0.9) 0%,
+      rgba(239, 246, 255, 0.55) 45%,
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 65% 80% at 100% 35%,
+      rgba(237, 233, 254, 0.95) 0%,
+      rgba(245, 243, 255, 0.6) 45%,
+      transparent 75%
+    ),
+    linear-gradient(
+      180deg,
+      #f8faff 0%,
+      #ffffff 50%,
+      #f8faff 100%
+    );
+}
+
 h1,h2,h3,h4,h5,h6 {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
@@ -55,10 +77,23 @@ h1,h2,h3,h4,h5,h6 {
 .font-display { font-family: "Poppins", sans-serif; letter-spacing: -0.03em; }
 .font-mono { font-family: "JetBrains Mono", monospace; }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DDE3F0;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C7D0E3;
+}
 
 /* NAV LINKS */
 .nav-link {

@@ -1,41 +1,801 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  User,
-  Eye,
-  MapPin,
-  Mail,
-  Phone,
-  Calendar,
-  GraduationCap,
-  Briefcase,
-  FolderKanban,
-  Gem,
-  Languages,
-  FileText,
-  Video,
-  Home,
-  DollarSign,
-  Pencil,
-  Plus,
-  ChevronRight,
-  CheckCircle2,
-  ExternalLink,
-  Code2,
-  Globe,
-  Sparkles,
-  Target,
-  Trash2,
-  Save,
-  X,
-  AlertTriangle,
+  User, Eye, MapPin, Mail, Phone, Calendar, GraduationCap,
+  Briefcase, FolderKanban, Gem, Languages, FileText, Video, Home,
+  DollarSign, Pencil, Plus, ChevronRight, CheckCircle2, ExternalLink,
+  Code2, Globe, Sparkles, Target, Trash2, Save, X, AlertTriangle,
+  Bookmark, Clock3, XCircle, Search,
 } from "lucide-react";
-
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { fetchProfile, saveProfileApi, uploadResumeApi } from "../services/profileService";
 import { resendVerificationApi } from "../services/authService";
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+
+const calculateProfileCompletion = (profile = {}) => {
+  const checks = [
+    Boolean(profile.name),
+    Boolean(profile.phone),
+    Boolean(profile.about),
+    Boolean(profile.address),
+    Boolean(profile.preferredLocations?.length),
+    Boolean(profile.experience?.length),
+    Boolean(profile.educationDetails?.length),
+    Boolean(profile.projects?.length),
+    Boolean(profile.skills?.length),
+    Boolean(profile.languages?.length),
+    Boolean(profile.resume),
+    Boolean(profile.videoIntroduction),
+  ];
+
+  const completed = checks.filter(Boolean).length;
+
+  return Math.round((completed / checks.length) * 100);
+};
+
+
+export default function SeekerDashboard() {
+  const { user } = useAuth();
+
+  const profileSectionRef = useRef(null);
+
+  const [stats, setStats] = useState({
+    applications: 0,
+    bookmarks: 0,
+    profileCompletion: 0,
+  });
+
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      loadDashboard();
+    }
+  }, [user]);
+
+  async function loadDashboard() {
+    try {
+      setLoading(true);
+
+      // Support the token keys used by the app/auth flow.
+      const token =
+        user?.token ||
+        user?.accessToken ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("jobxportal_token") ||
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("token") ||
+        sessionStorage.getItem("jobxportal_token") ||
+        sessionStorage.getItem("authToken");
+
+      if (!token) {
+        console.warn("SeekerDashboard: authentication token not found.");
+        setApplications([]);
+        setStats((prev) => ({
+          ...prev,
+          applications: 0,
+          bookmarks: 0,
+        }));
+        setLoading(false);
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+
+      // Fetch independently so one failed endpoint cannot prevent the
+      // remaining dashboard data from loading.
+      const [
+        applicationsRes,
+        careerApplicationsRes,
+        bookmarksRes,
+        profileRes,
+      ] = await Promise.allSettled([
+        fetch(`${API_URL}/applications/my`, {
+          method: "GET",
+          headers,
+        }),
+        fetch(`${API_URL}/careers/my-applications`, {
+          method: "GET",
+          headers,
+        }),
+        fetch(`${API_URL}/bookmarks`, {
+          method: "GET",
+          headers,
+        }),
+        fetch(`${API_URL}/profile`, {
+          method: "GET",
+          headers,
+        }),
+      ]);
+
+      let applicationData = [];
+      let careerApplicationData = [];
+      let bookmarkData = [];
+      let profileData = {};
+
+      // =====================================================
+      // NORMAL JOB APPLICATIONS
+      // =====================================================
+      if (applicationsRes.status === "fulfilled") {
+        const response = applicationsRes.value;
+
+        if (response.ok) {
+          const data = await response.json();
+
+          applicationData = Array.isArray(data.applications)
+            ? data.applications
+            : Array.isArray(data.data)
+              ? data.data
+              : Array.isArray(data)
+                ? data
+                : [];
+
+          console.log("JOB APPLICATIONS:", applicationData);
+        } else {
+          console.error(
+            "JOB APPLICATIONS API ERROR:",
+            response.status,
+            await response.text()
+          );
+        }
+      } else {
+        console.error(
+          "JOB APPLICATIONS REQUEST ERROR:",
+          applicationsRes.reason
+        );
+      }
+
+      // =====================================================
+      // JOBXPORTAL CAREER APPLICATIONS
+      // =====================================================
+      if (careerApplicationsRes.status === "fulfilled") {
+        const response = careerApplicationsRes.value;
+
+        if (response.ok) {
+          const data = await response.json();
+
+          careerApplicationData = Array.isArray(data.applications)
+            ? data.applications
+            : Array.isArray(data.data)
+              ? data.data
+              : Array.isArray(data)
+                ? data
+                : [];
+
+          console.log(
+            "JOBXPORTAL CAREER APPLICATIONS:",
+            careerApplicationData
+          );
+        } else {
+          const errorText = await response.text();
+
+          console.error(
+            "CAREER APPLICATIONS API ERROR:",
+            response.status,
+            errorText
+          );
+        }
+      } else {
+        console.error(
+          "CAREER APPLICATIONS REQUEST ERROR:",
+          careerApplicationsRes.reason
+        );
+      }
+
+      // =====================================================
+      // NORMALIZE JOB APPLICATIONS
+      // =====================================================
+      const normalApplications = applicationData.map(
+        (application) => ({
+          ...application,
+          applicationType: "job",
+          createdAt:
+            application.createdAt ||
+            application.appliedAt ||
+            application.created_at ||
+            0,
+          status: application.status || "pending",
+        })
+      );
+
+      // =====================================================
+      // NORMALIZE CAREER APPLICATIONS
+      // =====================================================
+      const careerApplications = careerApplicationData.map(
+        (application) => ({
+          ...application,
+          applicationType: "career",
+          jobTitle:
+            application.career?.title ||
+            application.title ||
+            application.jobTitle ||
+            "JobXPortal Career",
+          company:
+            application.company ||
+            "JobXPortal",
+          status:
+            application.status ||
+            "pending",
+          createdAt:
+            application.createdAt ||
+            application.appliedAt ||
+            application.created_at ||
+            0,
+        })
+      );
+
+      // =====================================================
+      // COMBINE BOTH APPLICATION TYPES
+      // =====================================================
+      const allApplications = [
+        ...normalApplications,
+        ...careerApplications,
+      ].sort(
+        (a, b) =>
+          new Date(b.createdAt || 0) -
+          new Date(a.createdAt || 0)
+      );
+
+      console.log("ALL SEEKER APPLICATIONS:", allApplications);
+
+      // =====================================================
+      // BOOKMARKS
+      // =====================================================
+      if (bookmarksRes.status === "fulfilled") {
+        const response = bookmarksRes.value;
+
+        if (response.ok) {
+          const data = await response.json();
+
+          bookmarkData = Array.isArray(data.bookmarks)
+            ? data.bookmarks
+            : Array.isArray(data.data)
+              ? data.data
+              : Array.isArray(data)
+                ? data
+                : [];
+        } else {
+          console.error(
+            "BOOKMARKS API ERROR:",
+            response.status,
+            await response.text()
+          );
+        }
+      }
+
+      // =====================================================
+      // PROFILE
+      // =====================================================
+      if (profileRes.status === "fulfilled") {
+        const response = profileRes.value;
+
+        if (response.ok) {
+          const data = await response.json();
+
+          profileData =
+            data.profile ||
+            data.data ||
+            data ||
+            {};
+        } else {
+          console.error(
+            "PROFILE API ERROR:",
+            response.status,
+            await response.text()
+          );
+        }
+      }
+
+      // =====================================================
+      // UPDATE DASHBOARD STATE
+      // =====================================================
+      const profileCompletion =
+        calculateProfileCompletion(profileData);
+
+      setApplications(allApplications);
+
+      setStats({
+        applications: allApplications.length,
+        bookmarks: bookmarkData.length,
+        profileCompletion,
+      });
+    } catch (error) {
+      console.error("Dashboard loading error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getStatusIcon = (status) => {
+    const value = String(status || "").toLowerCase();
+
+    if (
+      value.includes("short") ||
+      value.includes("selected") ||
+      value.includes("approved")
+    ) {
+      return (
+        <CheckCircle2
+          size={16}
+          className="text-green-600"
+        />
+      );
+    }
+
+    if (
+      value.includes("reject") ||
+      value.includes("decline")
+    ) {
+      return (
+        <XCircle
+          size={16}
+          className="text-red-500"
+        />
+      );
+    }
+
+    return (
+      <Clock3
+        size={16}
+        className="text-amber-500"
+      />
+    );
+  };
+
+  const getStatusClass = (status) => {
+    const value = String(status || "").toLowerCase();
+
+    if (
+      value.includes("short") ||
+      value.includes("selected") ||
+      value.includes("approved")
+    ) {
+      return "bg-green-50 text-green-700 border-green-200";
+    }
+
+    if (
+      value.includes("reject") ||
+      value.includes("decline")
+    ) {
+      return "bg-red-50 text-red-600 border-red-200";
+    }
+
+    return "bg-amber-50 text-amber-700 border-amber-200";
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFF] text-[#0B132B]">
+      <Navbar />
+
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+        {/* Header */}
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
+            <div>
+              <p className="text-sm font-semibold text-[#4F46E5]">
+                Welcome back
+              </p>
+
+              <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
+                {user?.name || "Job Seeker"}
+              </h1>
+
+              <p className="mt-2 text-sm text-[#64748B] sm:text-base">
+                Track your applications, manage your career profile,
+                and discover new opportunities.
+              </p>
+            </div>
+
+            {/* ONLY job search button */}
+            <Link
+              to="/jobs"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#4F46E5] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#4338CA]"
+            >
+              <Search size={17} />
+              Find Jobs
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Stats */}
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <DashboardStat
+            icon={Briefcase}
+            title="Applications"
+            value={loading ? "—" : stats.applications}
+            description="Jobs you have applied for"
+          />
+
+          <DashboardStat
+            icon={Bookmark}
+            title="Bookmarks"
+            value={loading ? "—" : stats.bookmarks}
+            description="Saved opportunities"
+          />
+
+          <DashboardStat
+            icon={User}
+            title="Profile Completion"
+            value={
+              loading
+                ? "—"
+                : `${stats.profileCompletion}%`
+            }
+            description="Keep your profile updated"
+          />
+        </div>
+
+        {/* Main Grid */}
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_350px]">
+          {/* Applications */}
+
+          <motion.section
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-[#E2E6F0] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.05)] sm:p-6"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-[#0B132B]">
+                  My Applications
+                </h2>
+
+                <p className="mt-1 text-sm text-[#64748B]">
+                  Track the jobs you have applied for.
+                </p>
+              </div>
+
+              <Link
+                to="/tracker"
+                className="text-sm font-semibold text-[#4F46E5] hover:underline"
+              >
+                View All
+              </Link>
+            </div>
+
+            <div className="mt-5">
+              {loading ? (
+                <div className="py-10 text-center text-sm text-[#94A3B8]">
+                  Loading applications...
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[#D8DEEA] bg-[#F8FAFF] px-5 py-10 text-center">
+                  <Briefcase
+                    size={32}
+                    className="mx-auto text-[#94A3B8]"
+                  />
+
+                  <h3 className="mt-3 font-bold text-[#334155]">
+                    No applications yet
+                  </h3>
+
+                  <p className="mt-1 text-sm text-[#64748B]">
+                    Start exploring jobs and apply for positions
+                    that match your skills.
+                  </p>
+
+                  <Link
+                    to="/jobs"
+                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white"
+                  >
+                    Search Jobs
+                    <ChevronRight size={16} />
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {applications
+                    .slice(0, 5)
+                    .map((application, index) => {
+                      const job =
+                        application.job ||
+                        application.jobId ||
+                        {};
+
+                      const isCareerApplication =
+                        application.applicationType ===
+                        "career";
+
+                      const title =
+                        isCareerApplication
+                          ? application.career?.title ||
+                            application.jobTitle ||
+                            "JobXPortal Career"
+                          : job.title ||
+                            application.jobTitle ||
+                            "Job Application";
+
+                      const company =
+                        isCareerApplication
+                          ? application.company ||
+                            "JobXPortal"
+                          : job.company ||
+                            application.company ||
+                            "Company";
+
+                      const status =
+                        application.status ||
+                        "Pending";
+
+                      return (
+                        <motion.div
+                          key={
+                            application._id ||
+                            application.id ||
+                            index
+                          }
+                          whileHover={{ y: -2 }}
+                          className="rounded-xl border border-[#E2E6F0] bg-[#F8FAFF] p-4"
+                        >
+                          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="font-bold text-[#0B132B]">
+                                  {title}
+                                </h3>
+
+                                {isCareerApplication && (
+                                  <span className="rounded-full bg-[#EEF2FF] px-2 py-1 text-[10px] font-bold text-[#4F46E5]">
+                                    JobXPortal Career
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="mt-1 text-sm text-[#64748B]">
+                                {company}
+                              </p>
+                            </div>
+
+                            <span
+                              className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${getStatusClass(
+                                status
+                              )}`}
+                            >
+                              {getStatusIcon(status)}
+                              {status}
+                            </span>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          </motion.section>
+
+          {/* Career Tools */}
+
+          <aside className="space-y-5">
+            <motion.section
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="rounded-2xl border border-[#E2E6F0] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.05)]"
+            >
+              <h2 className="text-lg font-bold">
+                Career Tools
+              </h2>
+
+              <p className="mt-1 text-sm leading-6 text-[#64748B]">
+                Improve your profile and prepare for your next
+                opportunity.
+              </p>
+
+              <div className="mt-4 space-y-2">
+                <ToolLink
+                  icon={FileText}
+                  title="Resume Builder"
+                  description="Create your resume"
+                  to="/resume-builder"
+                />
+
+                <ToolLink
+                  icon={Target}
+                  title="AI Resume Match"
+                  description="Match your resume with jobs"
+                  to="/resume-match"
+                />
+
+                <ToolLink
+                  icon={Sparkles}
+                  title="Interview Prep"
+                  description="Practice interview questions"
+                  to="/interview-prep"
+                />
+
+                <ToolLink
+                  icon={CheckCircle2}
+                  title="Job Tracker"
+                  description="Track your applications"
+                  to="/tracker"
+                />
+              </div>
+            </motion.section>
+
+            {/* Profile */}
+
+            <motion.section
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="rounded-2xl border border-[#E2E6F0] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.05)]"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-bold">
+                    Complete Your Profile
+                  </h2>
+
+                  <p className="mt-1 text-xs text-[#64748B]">
+                    A complete profile helps employers understand
+                    your background.
+                  </p>
+                </div>
+
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-4 border-[#E2E8F0]">
+                  <span className="text-xs font-black text-[#4F46E5]">
+                    {stats.profileCompletion}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#E2E8F0]">
+                <div
+                  className="h-full rounded-full bg-[#4F46E5] transition-all duration-700"
+                  style={{
+                    width: `${stats.profileCompletion}%`,
+                  }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  profileSectionRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+                className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#E2E6F0] bg-white py-2.5 text-sm font-semibold text-[#475569] transition hover:border-[#4F46E5]/30 hover:bg-[#F8F7FF] hover:text-[#4F46E5]"
+              >
+                <User size={16} />
+                Manage Profile
+              </button>
+            </motion.section>
+          </aside>
+        </div>
+      </main>
+
+      {/* =====================================================
+          EXISTING SEEKER PROFILE
+          Your original SeekerProfile code is rendered here.
+          It is embedded so Navbar/Footer are not duplicated.
+      ===================================================== */}
+
+      <div
+        ref={profileSectionRef}
+        className="scroll-mt-24"
+      >
+        <EmbeddedSeekerProfile
+          embedded
+          onProfileChange={(updatedProfile) => {
+            const profileCompletion =
+              calculateProfileCompletion(updatedProfile);
+
+            setStats((prev) => ({
+              ...prev,
+              profileCompletion,
+            }));
+          }}
+        />
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
+
+
+/* ============================= */
+/* STAT COMPONENT */
+/* ============================= */
+
+function DashboardStat({
+  icon: Icon,
+  title,
+  value,
+  description,
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -3 }}
+      className="rounded-2xl border border-[#E2E6F0] bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.05)]"
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-semibold text-[#64748B]">
+            {title}
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-[#0B132B]">
+            {value}
+          </p>
+
+          <p className="mt-1 text-xs text-[#94A3B8]">
+            {description}
+          </p>
+        </div>
+
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
+          <Icon size={21} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+
+/* ============================= */
+/* TOOL LINK */
+/* ============================= */
+
+function ToolLink({
+  icon: Icon,
+  title,
+  description,
+  to,
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center justify-between rounded-xl border border-[#E2E6F0] bg-[#F8FAFF] p-3 transition hover:border-[#4F46E5]/30 hover:bg-[#EEF2FF]"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#4F46E5] shadow-sm">
+          <Icon size={17} />
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-[#334155]">
+            {title}
+          </p>
+
+          <p className="mt-0.5 text-xs text-[#94A3B8]">
+            {description}
+          </p>
+        </div>
+      </div>
+
+      <ChevronRight
+        size={16}
+        className="text-[#94A3B8] transition group-hover:translate-x-1 group-hover:text-[#4F46E5]"
+      />
+    </Link>
+  );
+}
+
+/* ============================================================
+   EMBEDDED SEEKER PROFILE
+   Existing SeekerProfile code preserved below.
+============================================================ */
 
 const EMPTY_PROFILE = {
   name: "",
@@ -314,7 +1074,10 @@ function EditModal({ open, title, children, onClose, onSave, saving }) {
   );
 }
 
-export default function SeekerProfile() {
+export function EmbeddedSeekerProfile({
+  embedded = false,
+  onProfileChange,
+}) {
   const { user } = useAuth();
 
   const [profile, setProfile] = useState({
@@ -347,7 +1110,7 @@ export default function SeekerProfile() {
 
       const data = result?.profile || result?.data || result || {};
 
-      setProfile({
+      const loadedProfile = {
         ...EMPTY_PROFILE,
         name: user?.name || "",
         email: user?.email || "",
@@ -368,7 +1131,13 @@ export default function SeekerProfile() {
         preferredLocations: Array.isArray(data.preferredLocations)
           ? data.preferredLocations
           : [],
-      });
+      };
+
+      setProfile(loadedProfile);
+
+      if (onProfileChange) {
+        onProfileChange(loadedProfile);
+      }
     } catch (error) {
       console.error("Failed to load profile:", error);
     } finally {
@@ -413,7 +1182,19 @@ export default function SeekerProfile() {
   setUploadingResume(true);
   try {
     const { resume } = await uploadResumeApi(file);
-    setProfile((prev) => ({ ...prev, resume }));
+
+    setProfile((prev) => {
+      const updatedProfile = {
+        ...prev,
+        resume,
+      };
+
+      if (onProfileChange) {
+        onProfileChange(updatedProfile);
+      }
+
+      return updatedProfile;
+    });
   } catch (err) {
     setResumeError(err.message || "Upload failed.");
   } finally {
@@ -543,6 +1324,11 @@ export default function SeekerProfile() {
       console.log("Profile save response:", result);
 
       setProfile(updatedProfile);
+
+      if (onProfileChange) {
+        onProfileChange(updatedProfile);
+      }
+
       setModal(null);
       setEditData({});
 
@@ -565,6 +1351,10 @@ export default function SeekerProfile() {
     };
 
     setProfile(updatedProfile);
+
+    if (onProfileChange) {
+      onProfileChange(updatedProfile);
+    }
 
     try {
       await saveProfileApi(updatedProfile);
@@ -602,6 +1392,10 @@ export default function SeekerProfile() {
       await saveProfileApi(updatedProfile);
 
       setProfile(updatedProfile);
+
+      if (onProfileChange) {
+        onProfileChange(updatedProfile);
+      }
     } catch (error) {
       console.error("Failed to delete profile item:", error);
 
@@ -636,7 +1430,7 @@ export default function SeekerProfile() {
   if (loading) {
     return (
       <>
-        <Navbar />
+        {!embedded && <Navbar />}
 
         <main className="min-h-screen bg-[#F8FAFF] px-4 py-10">
           <div className="mx-auto max-w-7xl animate-pulse">
@@ -656,14 +1450,14 @@ export default function SeekerProfile() {
           </div>
         </main>
 
-        <Footer />
+        {!embedded && <Footer />}
       </>
     );
   }
 
   return (
     <>
-      <Navbar />
+      {!embedded && <Navbar />}
 
       <main className="min-h-screen bg-[#F8FAFF] px-4 py-6 text-[#0B132B] sm:px-6 lg:px-8 lg:py-10">
         <div className="mx-auto max-w-7xl">
@@ -1478,6 +2272,38 @@ export default function SeekerProfile() {
                 )}
               </ProfileCard>
 
+              {/* Ready-Made ATS Resume */}
+
+              <motion.a
+                href="https://topmate.io/anilbhukya05/2241969"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ y: -2 }}
+                className="group flex items-center justify-between rounded-2xl border border-[#4F46E5]/30 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition hover:border-[#4F46E5] hover:bg-[#F8F7FF] sm:p-6"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#4F46E5] text-white shadow-sm">
+                    <FileText size={20} />
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-bold text-[#0B132B]">
+                      Use our Ready-Made ATS Resume
+                    </h3>
+
+                    <p className="mt-1 text-sm text-[#64748B]">
+                      Editable, ATS-friendly resume template by Anil Bhukya
+                      — customize your details and get started.
+                    </p>
+                  </div>
+                </div>
+
+                <ExternalLink
+                  size={18}
+                  className="ml-4 shrink-0 text-[#64748B] transition group-hover:translate-x-1 group-hover:text-[#4F46E5]"
+                />
+              </motion.a>
+
               {/* Video */}
 
               <ProfileCard title="Video Introduction" icon={Video}>
@@ -1724,7 +2550,7 @@ export default function SeekerProfile() {
         </div>
       </main>
 
-      <Footer />
+      {!embedded && <Footer />}
 
       {/* Basic Information Modal */}
 

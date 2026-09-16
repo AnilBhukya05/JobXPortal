@@ -420,7 +420,7 @@ export default function ResumeBuilder() {
                     marginBottom: 2,
                   }}
                 >
-                  Prefer a ready-made ATS template?
+                  Use our Ready-Made ATS Resume
                 </p>
 
                 <p
@@ -430,8 +430,7 @@ export default function ResumeBuilder() {
                     color: "#64748B",
                   }}
                 >
-                  Editable, ATS-friendly resume template by Anil Bhukya — plug
-                  in your details and go.
+                  Editable, ATS-friendly resume template by Anil Bhukya — customize your details and get started.
                 </p>
               </div>
             </div>
