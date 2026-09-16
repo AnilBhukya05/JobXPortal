@@ -1095,6 +1095,10 @@ export function EmbeddedSeekerProfile({
   const [resending, setResending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
 
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+
   const [uploadingResume, setUploadingResume] = useState(false);
   const [resumeError, setResumeError] = useState("");
 
@@ -1166,6 +1170,75 @@ export function EmbeddedSeekerProfile({
       );
     } finally {
       setResending(false);
+    }
+  }
+
+    async function handleVerifyEmail() {
+    try {
+      setVerifyError("");
+
+      const cleanOtp = otp.trim();
+
+      if (!cleanOtp) {
+        setVerifyError("Please enter the OTP.");
+        return;
+      }
+
+      if (!/^\d{6}$/.test(cleanOtp)) {
+        setVerifyError("Please enter a valid 6-digit OTP.");
+        return;
+      }
+
+      const token =
+        user?.token ||
+        user?.accessToken ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("jobxportal_token") ||
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("token") ||
+        sessionStorage.getItem("jobxportal_token") ||
+        sessionStorage.getItem("authToken");
+
+      if (!token) {
+        setVerifyError("Authentication token not found.");
+        return;
+      }
+
+      setVerifying(true);
+
+      const response = await fetch(`${API_URL}/auth/verify-email`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user?.email || profile.email,
+          otp: cleanOtp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message || "Failed to verify email."
+        );
+      }
+
+      setOtp("");
+      setVerifyError("");
+
+      // Refresh AuthContext so isVerified becomes true
+      window.location.reload();
+    } catch (error) {
+      console.error("Email verification failed:", error);
+
+      setVerifyError(
+        error?.message || "Invalid or expired OTP."
+      );
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -1463,50 +1536,104 @@ export function EmbeddedSeekerProfile({
         <div className="mx-auto max-w-7xl">
           {/* Verification */}
 
-          <AnimatePresence>
-            {user && !user.isVerified && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: -15,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: -15,
-                }}
-                className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <AlertTriangle
-                    size={18}
-                    className="shrink-0 text-amber-600"
-                  />
+<AnimatePresence>
+  {user && !user.isVerified && (
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: -15,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      exit={{
+        opacity: 0,
+        y: -15,
+      }}
+      className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <AlertTriangle
+            size={18}
+            className="shrink-0 text-amber-600"
+          />
 
-                  <p className="text-sm text-amber-800">
-                    Your email isn't verified yet. Verify it to unlock full
-                    account features.
-                  </p>
-                </div>
+          <div>
+            <p className="text-sm font-semibold text-amber-800">
+              Your email isn't verified yet.
+            </p>
 
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={resending}
-                  className="cursor-pointer rounded-lg bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600 disabled:opacity-50"
-                >
-                  {resending
-                    ? "Sending..."
-                    : resendSent
-                      ? "Sent!"
-                      : "Resend Verification Email"}
-                </button>
-              </motion.div>
+            <p className="mt-1 text-xs text-amber-700">
+              Enter the 6-digit OTP sent to{" "}
+              <span className="font-semibold">
+                {user?.email || profile.email}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleResendVerification}
+          disabled={resending}
+          className="cursor-pointer rounded-lg bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600 disabled:opacity-50"
+        >
+          {resending
+            ? "Sending..."
+            : resendSent
+              ? "OTP Sent!"
+              : "Resend OTP"}
+        </button>
+      </div>
+
+      {/* OTP Verification */}
+      <div className="mt-4 rounded-xl border border-amber-200 bg-white p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className="flex-1">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              Email Verification OTP
+            </label>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => {
+                const value = e.target.value
+                  .replace(/\D/g, "")
+                  .slice(0, 6);
+
+                setOtp(value);
+                setVerifyError("");
+              }}
+              placeholder="Enter 6-digit OTP"
+              className="w-full rounded-xl border border-[#E2E6F0] bg-white px-4 py-3 text-sm font-semibold tracking-[0.3em] text-[#0B132B] outline-none transition placeholder:tracking-normal placeholder:font-normal placeholder:text-[#94A3B8] focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/10"
+            />
+
+            {verifyError && (
+              <p className="mt-2 text-xs font-medium text-red-500">
+                {verifyError}
+              </p>
             )}
-          </AnimatePresence>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleVerifyEmail}
+            disabled={verifying || otp.length !== 6}
+            className="mt-0 cursor-pointer rounded-xl bg-[#4F46E5] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6"
+          >
+            {verifying ? "Verifying..." : "Verify Email"}
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
           {/* Header */}
 

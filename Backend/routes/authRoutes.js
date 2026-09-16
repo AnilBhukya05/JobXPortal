@@ -19,7 +19,7 @@ router.post("/login", login);
 router.get("/me", protect, getMe);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.get("/verify-email/:token", verifyEmail);
+router.post("/verify-email", verifyEmail);
 router.post("/resend-verification", protect, resendVerification);
 
 export default router;

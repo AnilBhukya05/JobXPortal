@@ -40,6 +40,16 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    verificationTokenExpires: {
+      type: Date,
+      default: null,
+    },
+
+    verificationAttempts: {
+      type: Number,
+      default: 0,
+    },
+
     resetPasswordToken: {
       type: String,
       default: null,
@@ -83,14 +93,17 @@ userSchema.methods.generateResetToken = function () {
 };
 
 userSchema.methods.generateVerificationToken = function () {
-  const token = crypto.randomBytes(32).toString("hex");
+  const otp = crypto.randomInt(100000, 1000000).toString();
 
   this.verificationToken = crypto
     .createHash("sha256")
-    .update(token)
+    .update(otp)
     .digest("hex");
 
-  return token;
+  this.verificationTokenExpires = Date.now() + 10 * 60 * 1000;
+  this.verificationAttempts = 0;
+
+  return otp;
 };
 
 export default mongoose.model("User", userSchema);
