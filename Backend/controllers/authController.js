@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User from "../models/User.js";
 import {
-  sendWelcomeEmail,
   sendResetEmail,
   sendVerificationEmail,
 } from "../utils/sendEmail.js";
@@ -282,34 +281,60 @@ export async function verifyEmail(req, res) {
   }
 }
 
-export async function resendVerification(req, res) {
+export async function sendVerificationOtp(req, res) {
   try {
-    if (req.user.isVerified) {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({
+      email: cleanEmail,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "No account found with this email.",
+      });
+    }
+
+    if (user.isVerified) {
       return res.json({
         success: true,
+        alreadyVerified: true,
         message: "Your email is already verified.",
       });
     }
 
-    // Generate a new 6-digit OTP
-    const otp = req.user.generateVerificationToken();
+    // Generate new 6-digit OTP
+    const otp = user.generateVerificationToken();
 
-    await req.user.save();
+    await user.save();
 
-    // Send new OTP
-    sendVerificationEmail(
-      req.user.email,
-      req.user.name,
+    // Send OTP
+    await sendVerificationEmail(
+      user.email,
+      user.name,
       otp
     );
 
     res.json({
       success: true,
-      message: "Verification OTP sent.",
+      message: "Verification OTP sent to your email.",
     });
   } catch (err) {
+    console.error(
+      "Send verification OTP error:",
+      err
+    );
+
     res.status(500).json({
-      message: "Failed to resend verification",
+      message: "Failed to send verification OTP",
       error: err.message,
     });
   }

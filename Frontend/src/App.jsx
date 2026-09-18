@@ -48,6 +48,8 @@ import SEO from "./components/SEO";
 import Chatbot from "./components/Chatbot";
 import AdminRoute from "./components/AdminRoute";
 
+import MyServices from "./pages/MyServices";
+
 function App() {
   return (
     <BrowserRouter>
@@ -55,12 +57,10 @@ function App() {
         <ScrollToTop />
 
         <Routes>
+          <Route path="/services" element={<MyServices />} />
 
           {/* Public profile */}
-          <Route
-            path="/u/:userId"
-            element={<PublicProfile />}
-          />
+          <Route path="/u/:userId" element={<PublicProfile />} />
 
           {/* Home */}
           <Route
@@ -121,16 +121,10 @@ function App() {
           />
 
           {/* Role and location */}
-          <Route
-            path="/jobs/:role/:location"
-            element={<Jobs />}
-          />
+          <Route path="/jobs/:role/:location" element={<Jobs />} />
 
           {/* Role jobs */}
-          <Route
-            path="/jobs/:role"
-            element={<Jobs />}
-          />
+          <Route path="/jobs/:role" element={<Jobs />} />
 
           {/* Job details */}
           <Route
@@ -316,11 +310,7 @@ function App() {
             path="/login"
             element={
               <>
-                <SEO
-                  title="Login | JobXPortal"
-                  path="/login"
-                  noindex
-                />
+                <SEO title="Login | JobXPortal" path="/login" noindex />
 
                 <Login />
               </>
@@ -377,7 +367,7 @@ function App() {
 
           {/* Verify email */}
           <Route
-            path="/verify-email/:token"
+            path="/verify-email"
             element={
               <>
                 <SEO
@@ -504,11 +494,7 @@ function App() {
             path="/profile"
             element={
               <>
-                <SEO
-                  title="My Profile | JobXPortal"
-                  path="/profile"
-                  noindex
-                />
+                <SEO title="My Profile | JobXPortal" path="/profile" noindex />
 
                 <AuthGate featureName="Profile">
                   <Profile />
@@ -565,10 +551,7 @@ function App() {
           />
 
           {/* Admin login */}
-          <Route
-            path="/admin/login"
-            element={<AdminLogin />}
-          />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* Admin panel */}
           <Route
@@ -579,35 +562,17 @@ function App() {
               </AdminRoute>
             }
           >
-            <Route
-              index
-              element={<AdminDashboard />}
-            />
+            <Route index element={<AdminDashboard />} />
 
-            <Route
-              path="dashboard"
-              element={<AdminDashboard />}
-            />
+            <Route path="dashboard" element={<AdminDashboard />} />
 
-            <Route
-              path="careers"
-              element={<AdminCareers />}
-            />
+            <Route path="careers" element={<AdminCareers />} />
 
-            <Route
-              path="careers/new"
-              element={<AdminCareerForm />}
-            />
+            <Route path="careers/new" element={<AdminCareerForm />} />
 
-            <Route
-              path="careers/:id/edit"
-              element={<AdminCareerForm />}
-            />
+            <Route path="careers/:id/edit" element={<AdminCareerForm />} />
 
-            <Route
-              path="applications"
-              element={<AdminApplications />}
-            />
+            <Route path="applications" element={<AdminApplications />} />
           </Route>
 
           {/* Employer dashboard */}
@@ -627,7 +592,6 @@ function App() {
               </>
             }
           />
-
         </Routes>
 
         <ScrollToTopButton />

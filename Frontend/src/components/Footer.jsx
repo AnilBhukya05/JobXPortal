@@ -62,9 +62,8 @@ export default function Footer() {
         color: "#0B132B",
       }}
     >
-      {/* ========================================================= */}
+
       {/* TOP CTA BAND */}
-      {/* ========================================================= */}
 
       <div
         style={{
@@ -110,10 +109,7 @@ export default function Footer() {
                   flexShrink: 0,
                 }}
               >
-                <BriefcaseBusiness
-                  size={18}
-                  color="#4F46E5"
-                />
+                <BriefcaseBusiness size={18} color="#4F46E5" />
               </div>
 
               <p
@@ -209,9 +205,164 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ========================================================= */}
+      {/* MY SERVICES */}
+
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderBottom: "1px solid #E2E6F0",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: "0 auto",
+            padding: "42px 24px",
+          }}
+        >
+          <div
+            className="my-services-band"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 30,
+            }}
+          >
+            {/* LEFT SIDE */}
+            <div>
+              <p
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "#4F46E5",
+                  margin: "0 0 8px",
+                }}
+              >
+                My Services
+              </p>
+
+              <h2
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "1.45rem",
+                  fontWeight: 700,
+                  color: "#0B132B",
+                  margin: "0 0 9px",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Custom Digital Solutions for Your Ideas
+              </h2>
+
+              <p
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: 13,
+                  lineHeight: 1.8,
+                  color: "#64748B",
+                  maxWidth: 620,
+                  margin: 0,
+                }}
+              >
+                I design and develop modern websites, web applications, and
+                digital solutions to help businesses and individuals grow
+                online.
+              </p>
+            </div>
+
+            {/* RIGHT SIDE */}
+            <div
+              style={{
+                flexShrink: 0,
+                marginRight: 70,
+              }}
+            >
+              <a
+                href="/services"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="services-link"
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 9,
+                  fontFamily: "Poppins",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#4F46E5",
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  padding: "11px 17px",
+                  border: "1px solid rgba(79,70,229,0.20)",
+                  borderRadius: 10,
+                  background: "#F8FAFF",
+                  boxShadow: "0 4px 12px rgba(79,70,229,0.08)",
+                  transition:
+                    "color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease",
+                  cursor: "pointer",
+                  zIndex: 1,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#FFFFFF";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 20px rgba(79,70,229,0.20)";
+
+                  const fill = e.currentTarget.querySelector(".services-fill");
+                  if (fill) {
+                    fill.style.transform = "scaleX(1)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#4F46E5";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(79,70,229,0.08)";
+
+                  const fill = e.currentTarget.querySelector(".services-fill");
+                  if (fill) {
+                    fill.style.transform = "scaleX(0)";
+                  }
+                }}
+              >
+                {/* Blue fill animation */}
+                <span
+                  className="services-fill"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "#4F46E5",
+                    transform: "scaleX(0)",
+                    transformOrigin: "left",
+                    transition: "transform 0.35s ease",
+                    zIndex: -1,
+                  }}
+                />
+
+                <span style={{ position: "relative", zIndex: 2 }}>
+                  Explore My Services
+                </span>
+
+                <ArrowUpRight
+                  size={17}
+                  style={{
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* MAIN FOOTER */}
-      {/* ========================================================= */}
 
       <div
         style={{
@@ -228,9 +379,8 @@ export default function Footer() {
             gap: 34,
           }}
         >
-          {/* ===================================================== */}
+
           {/* BRAND */}
-          {/* ===================================================== */}
 
           <div>
             <Link
@@ -260,7 +410,8 @@ export default function Footer() {
             >
               One board, every opening. We aggregate live job listings from
               LinkedIn, Naukri, Glassdoor, Indeed, Wellfound and company career
-              pages — updated on every search. Employers can post directly, free.
+              pages — updated on every search. Employers can post directly,
+              free.
             </p>
 
             {/* STATS */}
@@ -275,7 +426,7 @@ export default function Footer() {
                 <div key={s.label}>
                   <div
                     style={{
-                      fontFamily: "JetBrains Mono",
+                      fontFamily: "Poppins",
                       fontSize: "1.05rem",
                       fontWeight: 700,
                       color: "#4F46E5",
@@ -286,7 +437,7 @@ export default function Footer() {
 
                   <div
                     style={{
-                      fontFamily: "JetBrains Mono",
+                      fontFamily: "Poppins",
                       fontSize: 10,
                       color: "#94A3B8",
                       textTransform: "uppercase",
@@ -301,15 +452,13 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* ===================================================== */}
           {/* LINK COLUMNS */}
-          {/* ===================================================== */}
 
           {footerLinks.map((col) => (
             <div key={col.title}>
               <p
                 style={{
-                  fontFamily: "JetBrains Mono",
+                  fontFamily: "Poppins",
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.12em",
@@ -357,9 +506,7 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* ========================================================= */}
         {/* BOTTOM BAR */}
-        {/* ========================================================= */}
 
         <div
           className="footer-bottom"
@@ -376,7 +523,7 @@ export default function Footer() {
         >
           <p
             style={{
-              fontFamily: "JetBrains Mono",
+              fontFamily: "Poppins",
               fontSize: 11,
               color: "#94A3B8",
               letterSpacing: "0.04em",
@@ -452,7 +599,7 @@ export default function Footer() {
 
           <p
             style={{
-              fontFamily: "JetBrains Mono",
+              fontFamily: "Poppins",
               fontSize: 11,
               color: "#94A3B8",
               letterSpacing: "0.04em",
@@ -464,9 +611,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ========================================================= */}
       {/* RESPONSIVE CSS */}
-      {/* ========================================================= */}
 
       <style>{`
         @media (max-width: 1024px) {
@@ -488,6 +633,19 @@ export default function Footer() {
           .footer-top-band a {
             flex: 1;
             justify-content: center;
+          }
+
+          .my-services-band {
+            align-items: flex-start !important;
+            flex-direction: column !important;
+          }
+
+          .my-services-band > div:last-child {
+            width: 100%;
+          }
+
+          .services-link {
+            justify-content: flex-start;
           }
 
           .footer-bottom {

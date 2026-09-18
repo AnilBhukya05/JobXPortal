@@ -78,10 +78,24 @@ export default function Login() {
     });
 
     if (result.error) {
-      setError(result.error);
-      setLoading(false);
-      return;
-    }
+  if (
+    result.error ===
+    "Please verify your email before logging in."
+  ) {
+    navigate(
+      `/verify-email?email=${encodeURIComponent(
+        form.email.trim().toLowerCase()
+      )}`
+    );
+
+    setLoading(false);
+    return;
+  }
+
+  setError(result.error);
+  setLoading(false);
+  return;
+}
 
     /*
      * ROLE-BASED REDIRECT
