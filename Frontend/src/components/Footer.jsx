@@ -48,9 +48,9 @@ const footerLinks = [
 ];
 
 const stats = [
-  { value: "29K+", label: "Live Jobs" },
+  { value: "Live", label: "Job Opportunities" },
   { value: "12", label: "Categories" },
-  { value: "Free", label: "Always" },
+  { value: "Free", label: "Job Search" },
 ];
 
 export default function Footer() {
@@ -62,7 +62,6 @@ export default function Footer() {
         color: "#0B132B",
       }}
     >
-
       {/* TOP CTA BAND */}
 
       <div
@@ -121,7 +120,7 @@ export default function Footer() {
                   margin: 0,
                 }}
               >
-                Real jobs. Search across every major portal in one place.
+                Find job opportunities from multiple sources in one place.
               </p>
             </div>
 
@@ -379,7 +378,6 @@ export default function Footer() {
             gap: 34,
           }}
         >
-
           {/* BRAND */}
 
           <div>
@@ -408,9 +406,9 @@ export default function Footer() {
                 marginBottom: 22,
               }}
             >
-              One board, every opening. We aggregate live job listings from
-              LinkedIn, Naukri, Glassdoor, Indeed, Wellfound and company career
-              pages — updated on every search. Employers can post directly,
+              JobXPortal brings job opportunities from supported external
+              job-data providers and employer-posted listings into one
+              searchable platform. Employers can also post jobs directly for
               free.
             </p>
 

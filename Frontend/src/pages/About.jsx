@@ -29,7 +29,7 @@ const steps = [
   {
     n: "01",
     title: "We scan every gate",
-    desc: "Jobs from LinkedIn, Naukri, Glassdoor, Indeed, Wellfound, Foundit and company career pages — all indexed continuously via Google for Jobs.",
+    desc: "JobXPortal brings job opportunities from supported external job-data providers and employer-posted listings into one searchable platform.",
     icon: Radar,
   },
   {
@@ -48,46 +48,25 @@ const steps = [
 
 const sources = [
   {
-    name: "LinkedIn",
-    icon: Link2,
-    desc: "Professional network listings and recruiter posts",
+    name: "External Job Providers",
+    icon: Globe2,
+    desc: "Job opportunities retrieved through supported external job-data providers.",
     color: "text-[#4F46E5]",
     bg: "bg-[#4F46E5]/10 border-[#4F46E5]/20",
   },
   {
-    name: "Naukri",
-    icon: Briefcase,
-    desc: "India's largest job board with millions of listings",
-    color: "text-[#6366F1]",
-    bg: "bg-[#6366F1]/10 border-[#6366F1]/20",
-  },
-  {
-    name: "Glassdoor",
+    name: "Employer Listings",
     icon: Building2,
-    desc: "Jobs with company reviews and salary insights",
+    desc: "Jobs posted directly by employers through JobXPortal.",
     color: "text-[#10B981]",
     bg: "bg-[#10B981]/10 border-[#10B981]/20",
   },
   {
-    name: "Indeed",
-    icon: Globe2,
-    desc: "Global job search engine covering every industry",
+    name: "Company Career Pages",
+    icon: Briefcase,
+    desc: "External application links may direct candidates to employer career pages.",
     color: "text-[#7C3AED]",
     bg: "bg-[#7C3AED]/10 border-[#7C3AED]/20",
-  },
-  {
-    name: "Wellfound",
-    icon: Briefcase,
-    desc: "Startup and early-stage tech roles",
-    color: "text-[#8B5CF6]",
-    bg: "bg-[#8B5CF6]/10 border-[#8B5CF6]/20",
-  },
-  {
-    name: "Company Career Pages",
-    icon: Building2,
-    desc: "Direct listings from employer career portals",
-    color: "text-[#059669]",
-    bg: "bg-[#059669]/10 border-[#059669]/20",
   },
 ];
 
@@ -181,9 +160,7 @@ export default function About() {
       <Navbar />
 
       <div className="min-h-screen bg-[#F8FAFF] text-[#0B132B]">
-
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20">
-
           {/* HERO */}
           <section className="mb-20 md:mb-28">
             <p className="font-mono text-xs tracking-widest text-[#64748B] mb-3">
@@ -233,7 +210,6 @@ export default function About() {
           {/* WHAT IS JOBXPORTAL */}
           <section className="mb-20 md:mb-28">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-
               <div>
                 <p className="font-mono text-xs tracking-widest text-[#64748B] mb-4">
                   THE IDEA
@@ -252,14 +228,13 @@ export default function About() {
 
                 <p className="text-[#64748B] leading-relaxed">
                   The goal is simple: make finding the right opportunity easier,
-                  help candidates prepare better and give employers another
-                  way to connect with potential talent.
+                  help candidates prepare better and give employers another way
+                  to connect with potential talent.
                 </p>
               </div>
 
               <div className="bg-white border border-[#E2E6F0] rounded-3xl p-6 md:p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
                 <div className="grid grid-cols-2 gap-4">
-
                   <div className="p-5 rounded-2xl bg-[#F8FAFF] border border-[#E2E6F0]">
                     <Search className="text-[#4F46E5] mb-4" size={24} />
                     <h3 className="font-bold mb-1">Discover</h3>
@@ -291,10 +266,8 @@ export default function About() {
                       Manage your applications
                     </p>
                   </div>
-
                 </div>
               </div>
-
             </div>
           </section>
 
@@ -309,10 +282,10 @@ export default function About() {
             </h2>
 
             <p className="text-[#64748B] max-w-3xl leading-relaxed mb-8">
-              Job searching can become repetitive very quickly. Candidates
-              often search the same role across several websites, compare
-              duplicate listings, open company career pages separately and
-              then use different tools to prepare their applications.
+              Job searching can become repetitive very quickly. Candidates often
+              search the same role across several websites, compare duplicate
+              listings, open company career pages separately and then use
+              different tools to prepare their applications.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -330,10 +303,7 @@ export default function About() {
                     transition-all duration-300
                   "
                 >
-                  <item.icon
-                    size={24}
-                    className="text-[#4F46E5] mb-4"
-                  />
+                  <item.icon size={24} className="text-[#4F46E5] mb-4" />
 
                   <h3 className="font-bold text-lg mb-2 text-[#0B132B]">
                     {item.title}
@@ -379,10 +349,7 @@ export default function About() {
                   "
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#4F46E5]/10 flex items-center justify-center mb-4">
-                    <feature.icon
-                      size={19}
-                      className="text-[#4F46E5]"
-                    />
+                    <feature.icon size={19} className="text-[#4F46E5]" />
                   </div>
 
                   <h3 className="font-bold text-sm mb-2 text-[#0B132B]">
@@ -400,7 +367,6 @@ export default function About() {
           {/* FOR EMPLOYERS */}
           <section className="mb-20 md:mb-28">
             <div className="bg-[#0B132B] rounded-3xl p-7 md:p-10 text-white">
-
               <div className="max-w-2xl mb-8">
                 <p className="font-mono text-xs tracking-widest text-[#A5B4FC] mb-4">
                   FOR EMPLOYERS
@@ -411,10 +377,9 @@ export default function About() {
                 </h2>
 
                 <p className="text-[#CBD5E1] text-sm md:text-base leading-relaxed">
-                  JobXPortal is not only for candidates. Employers can create
-                  an account, build their company presence and publish job
-                  opportunities for people actively looking for their next
-                  role.
+                  JobXPortal is not only for candidates. Employers can create an
+                  account, build their company presence and publish job
+                  opportunities for people actively looking for their next role.
                 </p>
               </div>
 
@@ -431,14 +396,9 @@ export default function About() {
                       transition
                     "
                   >
-                    <feature.icon
-                      size={23}
-                      className="text-[#A5B4FC] mb-4"
-                    />
+                    <feature.icon size={23} className="text-[#A5B4FC] mb-4" />
 
-                    <h3 className="font-bold mb-2">
-                      {feature.title}
-                    </h3>
+                    <h3 className="font-bold mb-2">{feature.title}</h3>
 
                     <p className="text-[#CBD5E1] text-xs leading-relaxed">
                       {feature.desc}
@@ -446,7 +406,6 @@ export default function About() {
                   </div>
                 ))}
               </div>
-
             </div>
           </section>
 
@@ -479,10 +438,7 @@ export default function About() {
                     {step.n}
                   </span>
 
-                  <step.icon
-                    className="text-[#10B981] mt-4 mb-4"
-                    size={26}
-                  />
+                  <step.icon className="text-[#10B981] mt-4 mb-4" size={26} />
 
                   <h3 className="text-base md:text-lg font-bold mb-2">
                     {step.title}
@@ -499,7 +455,6 @@ export default function About() {
           {/* AI CAREER TOOLS */}
           <section className="mb-20 md:mb-28">
             <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
-
               <div>
                 <p className="font-mono text-xs tracking-widest text-[#64748B] mb-4">
                   AI CAREER TOOLS
@@ -511,19 +466,18 @@ export default function About() {
 
                 <p className="text-[#64748B] leading-relaxed">
                   JobXPortal uses AI-assisted tools to help candidates
-                  understand their fit for a role, create application
-                  materials and prepare for interviews.
+                  understand their fit for a role, create application materials
+                  and prepare for interviews.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
                 <div className="bg-white border border-[#E2E6F0] rounded-2xl p-5">
                   <Brain className="text-[#7C3AED] mb-4" size={23} />
                   <h3 className="font-bold mb-2">Resume Matching</h3>
                   <p className="text-[#64748B] text-sm leading-relaxed">
-                    Understand your resume's compatibility with a specific
-                    job opportunity.
+                    Understand your resume's compatibility with a specific job
+                    opportunity.
                   </p>
                 </div>
 
@@ -549,13 +503,11 @@ export default function About() {
                   <Sparkles className="text-[#F59E0B] mb-4" size={23} />
                   <h3 className="font-bold mb-2">Career Assistance</h3>
                   <p className="text-[#64748B] text-sm leading-relaxed">
-                    Use AI-powered assistance as part of your broader job
-                    search and application workflow.
+                    Use AI-powered assistance as part of your broader job search
+                    and application workflow.
                   </p>
                 </div>
-
               </div>
-
             </div>
           </section>
 
@@ -566,12 +518,13 @@ export default function About() {
             </p>
 
             <h2 className="text-2xl md:text-3xl font-display font-bold mb-3 text-[#0B132B]">
-              Every major portal. One search.
+              Multiple sources. One search.
             </h2>
 
             <p className="text-[#64748B] mb-6 md:mb-8 max-w-xl text-sm md:text-base">
-              Our live feed is powered by Google for Jobs which continuously
-              indexes listings from all of these sources and more.
+              JobXPortal brings job opportunities from supported external
+              job-data providers and employer-posted listings into one
+              searchable platform.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
@@ -630,7 +583,6 @@ export default function About() {
               "
             >
               <div className="flex flex-col sm:flex-row gap-6 md:gap-8 items-start">
-
                 {/* AVATAR */}
                 {/* <div className="shrink-0">
                   <img
@@ -661,13 +613,11 @@ export default function About() {
                 </div>
 
                 <div className="flex-1">
-
                   <h3 className="text-xl md:text-2xl font-display font-bold text-[#0B132B]">
                     Anil Bhukya
                   </h3>
 
                   <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-2 mb-4">
-
                     <span
                       className="
                         inline-flex items-center gap-1.5
@@ -696,14 +646,14 @@ export default function About() {
                     >
                       Founder, JobXPortal
                     </span>
-
                   </div>
 
                   <p className="text-[#64748B] leading-relaxed mb-4 text-sm md:text-base">
-                    Built JobXPortal after spending too much time switching
-                    between LinkedIn, Naukri, Glassdoor and company career pages
-                    every morning during my own job search. The idea was simple:
-                    one board, every opening, no extra tabs.
+                    Built JobXPortal after experiencing how repetitive job
+                    searching can become when candidates have to switch between
+                    multiple job websites and company career pages. The idea was
+                    simple: bring job discovery and career tools together in one
+                    place.
                   </p>
 
                   <p className="text-[#64748B] leading-relaxed mb-6 text-sm md:text-base">
@@ -713,7 +663,6 @@ export default function About() {
                   </p>
 
                   <div className="flex flex-wrap gap-2 md:gap-3">
-
                     <a
                       href="https://github.com/AnilBhukya05"
                       target="_blank"
@@ -777,9 +726,7 @@ export default function About() {
                       <Mail size={14} />
                       Contact
                     </a>
-
                   </div>
-
                 </div>
               </div>
             </div>
@@ -800,10 +747,7 @@ export default function About() {
               "
             >
               <div className="w-12 h-12 rounded-2xl bg-[#4F46E5]/10 flex items-center justify-center mx-auto mb-5">
-                <Sparkles
-                  size={24}
-                  className="text-[#4F46E5]"
-                />
+                <Sparkles size={24} className="text-[#4F46E5]" />
               </div>
 
               <h2 className="text-2xl md:text-4xl font-display font-bold text-[#0B132B] mb-4">
@@ -836,7 +780,6 @@ export default function About() {
               </a>
             </div>
           </section>
-
         </div>
 
         <Footer />
