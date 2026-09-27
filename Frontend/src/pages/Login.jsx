@@ -57,75 +57,89 @@ export default function Login() {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    setError("");
+  setError("");
 
-    if (!form.email || !form.password) {
-      setError(
-        "Please fill in all fields."
+  if (!form.email || !form.password) {
+    setError("Please fill in all fields.");
+    return;
+  }
+
+  setLoading(true);
+
+  const result = await login({
+    email: form.email,
+    password: form.password,
+    remember: form.remember,
+  });
+
+  if (result.error) {
+    if (
+      result.error ===
+      "Please verify your email before logging in."
+    ) {
+      navigate(
+        `/verify-email?email=${encodeURIComponent(
+          form.email.trim().toLowerCase()
+        )}`
       );
 
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-
-    const result = await login({
-      email: form.email,
-      password: form.password,
-      remember: form.remember,
-    });
-
-    if (result.error) {
-  if (
-    result.error ===
-    "Please verify your email before logging in."
-  ) {
-    navigate(
-      `/verify-email?email=${encodeURIComponent(
-        form.email.trim().toLowerCase()
-      )}`
-    );
-
+    setError(result.error);
     setLoading(false);
     return;
   }
 
-  setError(result.error);
-  setLoading(false);
-  return;
-}
+  const autoApply = Boolean(location.state?.autoApply);
 
-    /*
-     * ROLE-BASED REDIRECT
-     *
-     * Admin     → /admin
-     * Employer  → previous requested page
-     * Seeker    → previous requested page
-     */
+  /*
+   * Do NOT open the external job here.
+   * After login, JobDetails shows the "Continue to application"
+   * modal. The external source opens only when the user clicks
+   * that button, which preserves browser user activation.
+   */
 
-    if (result.user?.role === "admin") {
-      navigate("/admin", {
-        replace: true,
-      });
+  /*
+   * ROLE-BASED REDIRECT
+   *
+   * Admin     → /admin
+   * Employer  → requested page
+   * Seeker    → requested page
+   *
+   * autoApply is preserved so the JobDetails page can keep the
+   * application state/return flow alive.
+   */
 
-      return;
-    }
-
-    if (result.user?.role === "employer") {
-      navigate(from, {
-        replace: true,
-      });
-
-      return;
-    }
-
-    navigate(from, {
+  if (result.user?.role === "admin") {
+    navigate("/admin", {
       replace: true,
     });
+
+    return;
   }
 
+  if (result.user?.role === "employer") {
+    navigate(from, {
+      replace: true,
+      state: {
+        autoApply,
+      },
+    });
+
+    return;
+  }
+
+  navigate(from, {
+    replace: true,
+    state: {
+      autoApply,
+    },
+  });
+}
   return (
     <>
       <Navbar />
@@ -560,6 +574,10 @@ export default function Login() {
                 New here?{" "}
                 <Link
                   to="/register"
+                  state={{
+                    from,
+                    autoApply: Boolean(location.state?.autoApply),
+                  }}
                   style={{
                     color: "#4F46E5",
                     textDecoration:

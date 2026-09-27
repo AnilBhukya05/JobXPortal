@@ -16,7 +16,7 @@ const JobsContext = createContext(null);
 
 const REFRESH_INTERVAL = 5 * 60 * 1000;
 const ADZUNA_RESULTS_PER_PAGE = 20;
-const MAX_PAGES = 5;
+const MAX_PAGES = 2;
 
 export function JobsProvider({ children }) {
   const [jobs, setJobs] = useState([]);
@@ -37,7 +37,9 @@ export function JobsProvider({ children }) {
   const providerRef = useRef("jsearch");
   const searchIdRef = useRef(0);
 
-  // Remove duplicate jobs
+  /*
+   * Remove duplicate jobs
+   */
   const mergeUniqueJobs = useCallback((jobArrays) => {
     const map = new Map();
 
@@ -56,45 +58,65 @@ export function JobsProvider({ children }) {
     return Array.from(map.values());
   }, []);
 
-  // Search jobs from available sources
+  /*
+   * Search jobs
+   */
   const search = useCallback(
-    async (query) => {
+    async (query = {}) => {
       const currentSearchId = ++searchIdRef.current;
 
       setLoading(true);
       setError("");
 
-      const merged = Object.assign(
-        {
-          what: "jobs",
-          where: "india",
-        },
-        query || {},
-      );
+      const merged = {
+        what: "jobs",
+        where: "india",
+        ...query,
+      };
 
       lastQueryRef.current = merged;
       pageRef.current = 1;
 
-      // Fetch employer-posted jobs
+      /*
+       * Employer jobs
+       */
       const employerJobsPromise = fetchPublicJobsApi({
         what: merged.what,
         where: merged.where,
-      }).catch(() => ({
-        jobs: [],
-        count: 0,
-      }));
+      }).catch((error) => {
+        console.warn(
+          "Employer jobs request failed:",
+          error
+        );
 
-      // Try JSearch first
+        return {
+          jobs: [],
+          count: 0,
+        };
+      });
+
+      /*
+       * ==========================================
+       * JSEARCH
+       * ==========================================
+       */
       try {
-        const [firstResult, employerResult] = await Promise.all([
-          fetchJSearchJobs({
-            ...merged,
-            page: 1,
-          }),
-          employerJobsPromise,
-        ]);
+        const [firstResult, employerResult] =
+          await Promise.all([
+            fetchJSearchJobs({
+              ...merged,
+              page: 1,
+            }),
+            employerJobsPromise,
+          ]);
 
-        if (currentSearchId !== searchIdRef.current) {
+        /*
+         * Ignore old search response
+         */
+        if (
+          currentSearchId !==
+          searchIdRef.current
+        ) {
           return;
         }
 
@@ -102,54 +124,104 @@ export function JobsProvider({ children }) {
 
         const allLiveJobs = [];
 
-        if (firstResult && Array.isArray(firstResult.jobs)) {
-          allLiveJobs.push(firstResult.jobs);
+        if (
+          firstResult &&
+          Array.isArray(firstResult.jobs)
+        ) {
+          allLiveJobs.push(
+            firstResult.jobs
+          );
         }
 
-        const resultCount = Number(firstResult.count) || 0;
+        const resultCount =
+          Number(firstResult?.count) || 0;
 
-        const resultsPerPage = firstResult?.jobs?.length || 20;
+        const resultsPerPage =
+          firstResult?.jobs?.length || 20;
 
-        let pagesNeeded = Math.ceil(resultCount / resultsPerPage);
+        let pagesNeeded = Math.ceil(
+          resultCount / resultsPerPage
+        );
 
-        pagesNeeded = Math.max(1, pagesNeeded);
-        pagesNeeded = Math.min(pagesNeeded, MAX_PAGES);
+        pagesNeeded = Math.max(
+          1,
+          pagesNeeded
+        );
 
-        // Fetch remaining JSearch pages
-        for (let page = 2; page <= pagesNeeded; page++) {
-          if (currentSearchId !== searchIdRef.current) {
+        pagesNeeded = Math.min(
+          pagesNeeded,
+          MAX_PAGES
+        );
+
+        /*
+         * Fetch additional JSearch pages
+         */
+        for (
+          let page = 2;
+          page <= pagesNeeded;
+          page++
+        ) {
+          if (
+            currentSearchId !==
+            searchIdRef.current
+          ) {
             return;
           }
 
           try {
-            const result = await fetchJSearchJobs({
-              ...merged,
-              page,
-            });
+            const result =
+              await fetchJSearchJobs({
+                ...merged,
+                page,
+              });
 
-            if (result && Array.isArray(result.jobs)) {
-              allLiveJobs.push(result.jobs);
+            if (
+              result &&
+              Array.isArray(result.jobs)
+            ) {
+              allLiveJobs.push(
+                result.jobs
+              );
 
-              if (result.jobs.length < resultsPerPage) {
+              if (
+                result.jobs.length <
+                resultsPerPage
+              ) {
                 break;
               }
             } else {
               break;
             }
           } catch (pageError) {
-            console.warn(`JSearch page ${page} failed:`, pageError);
+            console.warn(
+              `JSearch page ${page} failed:`,
+              pageError
+            );
+
             break;
           }
         }
 
-        const combined = mergeUniqueJobs([
-          employerResult.jobs || [],
-          ...allLiveJobs,
-        ]);
+        const combined =
+          mergeUniqueJobs([
+            employerResult?.jobs || [],
+            ...allLiveJobs,
+          ]);
+
+        if (
+          currentSearchId !==
+          searchIdRef.current
+        ) {
+          return;
+        }
 
         setJobs(combined);
 
-        setTotalCount(resultCount + (employerResult.jobs || []).length);
+        setTotalCount(
+          resultCount +
+            (employerResult?.jobs || [])
+              .length
+        );
 
         setHasMore(false);
         setIsDemo(false);
@@ -157,22 +229,34 @@ export function JobsProvider({ children }) {
         setLoading(false);
 
         return;
-      } catch (jsearchErr) {
-        console.warn("JSearch failed:", jsearchErr);
+      } catch (jsearchError) {
+        console.warn(
+          "JSearch failed:",
+          jsearchError
+        );
       }
 
-      // Try Adzuna as backup
+      /*
+       * ==========================================
+       * ADZUNA FALLBACK
+       * ==========================================
+       */
       try {
-        const [firstResult, employerResult] = await Promise.all([
-          fetchAdzunaJobs({
-            ...merged,
-            page: 1,
-            resultsPerPage: ADZUNA_RESULTS_PER_PAGE,
-          }),
-          employerJobsPromise,
-        ]);
+        const [firstResult, employerResult] =
+          await Promise.all([
+            fetchAdzunaJobs({
+              ...merged,
+              page: 1,
+              resultsPerPage:
+                ADZUNA_RESULTS_PER_PAGE,
+            }),
+            employerJobsPromise,
+          ]);
 
-        if (currentSearchId !== searchIdRef.current) {
+        if (
+          currentSearchId !==
+          searchIdRef.current
+        ) {
           return;
         }
 
@@ -180,53 +264,104 @@ export function JobsProvider({ children }) {
 
         const allLiveJobs = [];
 
-        if (firstResult && Array.isArray(firstResult.jobs)) {
-          allLiveJobs.push(firstResult.jobs);
+        if (
+          firstResult &&
+          Array.isArray(firstResult.jobs)
+        ) {
+          allLiveJobs.push(
+            firstResult.jobs
+          );
         }
 
-        const resultCount = Number(firstResult.count) || 0;
+        const resultCount =
+          Number(firstResult?.count) || 0;
 
-        let pagesNeeded = Math.ceil(resultCount / ADZUNA_RESULTS_PER_PAGE);
+        let pagesNeeded = Math.ceil(
+          resultCount /
+            ADZUNA_RESULTS_PER_PAGE
+        );
 
-        pagesNeeded = Math.max(1, pagesNeeded);
-        pagesNeeded = Math.min(pagesNeeded, MAX_PAGES);
+        pagesNeeded = Math.max(
+          1,
+          pagesNeeded
+        );
 
-        // Fetch remaining Adzuna pages
-        for (let page = 2; page <= pagesNeeded; page++) {
-          if (currentSearchId !== searchIdRef.current) {
+        pagesNeeded = Math.min(
+          pagesNeeded,
+          MAX_PAGES
+        );
+
+        /*
+         * Fetch additional Adzuna pages
+         */
+        for (
+          let page = 2;
+          page <= pagesNeeded;
+          page++
+        ) {
+          if (
+            currentSearchId !==
+            searchIdRef.current
+          ) {
             return;
           }
 
           try {
-            const result = await fetchAdzunaJobs({
-              ...merged,
-              page,
-              resultsPerPage: ADZUNA_RESULTS_PER_PAGE,
-            });
+            const result =
+              await fetchAdzunaJobs({
+                ...merged,
+                page,
+                resultsPerPage:
+                  ADZUNA_RESULTS_PER_PAGE,
+              });
 
-            if (result && Array.isArray(result.jobs)) {
-              allLiveJobs.push(result.jobs);
+            if (
+              result &&
+              Array.isArray(result.jobs)
+            ) {
+              allLiveJobs.push(
+                result.jobs
+              );
 
-              if (result.jobs.length < ADZUNA_RESULTS_PER_PAGE) {
+              if (
+                result.jobs.length <
+                ADZUNA_RESULTS_PER_PAGE
+              ) {
                 break;
               }
             } else {
               break;
             }
           } catch (pageError) {
-            console.warn(`Adzuna page ${page} failed:`, pageError);
+            console.warn(
+              `Adzuna page ${page} failed:`,
+              pageError
+            );
+
             break;
           }
         }
 
-        const combined = mergeUniqueJobs([
-          employerResult.jobs || [],
-          ...allLiveJobs,
-        ]);
+        const combined =
+          mergeUniqueJobs([
+            employerResult?.jobs || [],
+            ...allLiveJobs,
+          ]);
+
+        if (
+          currentSearchId !==
+          searchIdRef.current
+        ) {
+          return;
+        }
 
         setJobs(combined);
 
-        setTotalCount(resultCount + (employerResult.jobs || []).length);
+        setTotalCount(
+          resultCount +
+            (employerResult?.jobs || [])
+              .length
+        );
 
         setHasMore(false);
         setIsDemo(false);
@@ -234,47 +369,65 @@ export function JobsProvider({ children }) {
         setLoading(false);
 
         return;
-      } catch (adzunaErr) {
-        console.warn("Adzuna failed:", adzunaErr);
+      } catch (adzunaError) {
+        console.warn(
+          "Adzuna failed:",
+          adzunaError
+        );
       }
 
-      // Use demo jobs if live APIs fail
+      /*
+       * ==========================================
+       * DEMO FALLBACK
+       * ==========================================
+       */
       try {
-        const employerResult = await employerJobsPromise;
+        const employerResult =
+          await employerJobsPromise;
 
-        if (currentSearchId !== searchIdRef.current) {
+        if (
+          currentSearchId !==
+          searchIdRef.current
+        ) {
           return;
         }
 
         providerRef.current = "demo";
 
-        const keyword = (merged.what || "").toLowerCase();
+        const keyword = (
+          merged.what || ""
+        ).toLowerCase();
 
         const filtered = keyword
           ? demoJobs.filter((job) =>
               (
-                (job.title || "") +
-                " " +
-                (job.company || "") +
-                " " +
-                (job.tags || []).join(" ")
+                `${job.title || ""} ${
+                  job.company || ""
+                } ${(job.tags || []).join(
+                  " "
+                )}`
               )
                 .toLowerCase()
-                .includes(keyword),
+                .includes(keyword)
             )
           : demoJobs;
 
-        const finalFallback = (filtered.length ? filtered : demoJobs).map(
-          (job) => ({
-            ...job,
-            source: job.source || "Demo Listing",
-          }),
-        );
+        const finalFallback = (
+          filtered.length
+            ? filtered
+            : demoJobs
+        ).map((job) => ({
+          ...job,
+          source:
+            job.source ||
+            "Demo Listing",
+        }));
 
-        const combined = mergeUniqueJobs([
-          employerResult.jobs || [],
-          finalFallback,
-        ]);
+        const combined =
+          mergeUniqueJobs([
+            employerResult?.jobs || [],
+            finalFallback,
+          ]);
 
         setJobs(combined);
         setTotalCount(combined.length);
@@ -282,50 +435,95 @@ export function JobsProvider({ children }) {
         setIsDemo(true);
 
         setError(
-          "Could not reach any live job feed. Showing available listings.",
+          "Could not reach any live job feed. Showing available listings."
         );
 
         setLastUpdated(new Date());
         setLoading(false);
-      } catch {
+      } catch (fallbackError) {
+        console.error(
+          "All job sources failed:",
+          fallbackError
+        );
+
+        if (
+          currentSearchId !==
+          searchIdRef.current
+        ) {
+          return;
+        }
+
         setJobs([]);
         setTotalCount(0);
         setHasMore(false);
         setIsDemo(true);
-        setError("Could not load jobs.");
+        setError(
+          "Could not load jobs."
+        );
+        setLastUpdated(new Date());
         setLoading(false);
       }
     },
-    [mergeUniqueJobs],
+    [mergeUniqueJobs]
   );
 
-  // Kept for compatibility with other components
-  const loadMore = useCallback(async () => {
-    return;
-  }, []);
+  /*
+   * Compatibility with existing components
+   */
+  const loadMore = useCallback(
+    async () => {
+      return;
+    },
+    []
+  );
 
-  // Refresh current search
+  /*
+   * Refresh current search
+   */
   const refresh = useCallback(() => {
     search(lastQueryRef.current);
   }, [search]);
 
-  // Initial job search
+  /*
+   * Initial search
+   *
+   * Runs once when JobsProvider mounts.
+   */
   useEffect(() => {
-    search();
-  }, [search]);
+    search({
+      what: "software developer",
+      where: "india",
+    });
+  }, []);
 
-  // Refresh jobs every 5 minutes
+  /*
+   * Refresh every 5 minutes.
+   *
+   * Empty dependency array intentionally prevents
+   * repeatedly creating new intervals.
+   */
   useEffect(() => {
-    const interval = setInterval(() => {
-      search(lastQueryRef.current);
-    }, REFRESH_INTERVAL);
+    const interval =
+      setInterval(() => {
+        search(
+          lastQueryRef.current
+        );
+      }, REFRESH_INTERVAL);
 
-    return () => clearInterval(interval);
-  }, [search]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
-  // Find a job by ID
+  /*
+   * Find job by ID
+   */
   function getJobById(id) {
-    return jobs.find((job) => String(job.id) === String(id));
+    return jobs.find(
+      (job) =>
+        String(job.id) ===
+        String(id)
+    );
   }
 
   return (
@@ -343,7 +541,8 @@ export function JobsProvider({ children }) {
         refresh,
         loadMore,
         getJobById,
-        provider: providerRef.current,
+        provider:
+          providerRef.current,
       }}
     >
       {children}
@@ -352,10 +551,13 @@ export function JobsProvider({ children }) {
 }
 
 export function useJobs() {
-  const ctx = useContext(JobsContext);
+  const ctx =
+    useContext(JobsContext);
 
   if (!ctx) {
-    throw new Error("useJobs must be used inside a JobsProvider");
+    throw new Error(
+      "useJobs must be used inside a JobsProvider"
+    );
   }
 
   return ctx;

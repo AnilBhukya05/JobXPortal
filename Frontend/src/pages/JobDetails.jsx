@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { ExternalLink, ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -101,6 +101,8 @@ function JobPostingSchema({ job }) {
 
 export default function JobDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const { getJobById, loading, search } = useJobs();
   const { addRecent } = useBookmarkContext();
@@ -109,6 +111,15 @@ export default function JobDetails() {
   const [refetched, setRefetched] = useState(false);
   const [applied, setApplied] = useState(false);
   const [applying, setApplying] = useState(false);
+
+  const [applicationStarted, setApplicationStarted] = useState(false);
+  // One modal at a time: "continue" after login, or "status" after returning.
+  // Using a single state prevents the two dialogs from ever overlapping.
+  const [applicationModal, setApplicationModal] = useState(null);
+  const [savingApplication, setSavingApplication] = useState(false);
+
+  const applicationLeftRef = useRef(false);
+  const applicationReturnHandledRef = useRef(false);
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -122,9 +133,7 @@ export default function JobDetails() {
     contextJob ||
     (() => {
       try {
-        const stored = sessionStorage.getItem(
-          `jobxportal_preview_${id}`
-        );
+        const stored = sessionStorage.getItem(`jobxportal_preview_${id}`);
 
         return stored ? JSON.parse(stored) : null;
       } catch {
@@ -144,9 +153,9 @@ export default function JobDetails() {
   }, [job, loading, refetched, search]);
 
   useEffect(() => {
-    if (job) {
-      addRecent(job);
-    }
+    if (!job?.id) return;
+
+    addRecent(job);
   }, [job?.id, addRecent]);
 
   useEffect(() => {
@@ -161,6 +170,79 @@ export default function JobDetails() {
     recordJobViewApi(job.id);
   }, [job?.id]);
 
+  useEffect(() => {
+    if (!job?.id) return;
+
+    function markApplicationReturned() {
+      if (!applicationLeftRef.current) return;
+      if (applicationReturnHandledRef.current) return;
+
+      applicationReturnHandledRef.current = true;
+      applicationLeftRef.current = false;
+
+      try {
+        const pending = sessionStorage.getItem(
+          "jobxportal_pending_application",
+        );
+
+        if (!pending) return;
+
+        const data = JSON.parse(pending);
+
+        if (String(data.jobId) !== String(job.id)) return;
+
+        setApplicationModal("status");
+      } catch {
+        // Ignore invalid session storage data.
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden") {
+        applicationLeftRef.current = true;
+        applicationReturnHandledRef.current = false;
+        return;
+      }
+
+      if (document.visibilityState === "visible") {
+        markApplicationReturned();
+      }
+    }
+
+    function handleWindowFocus() {
+      markApplicationReturned();
+    }
+
+    function handlePageShow() {
+      markApplicationReturned();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [job?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (!job) return;
+    if (!location.state?.autoApply) return;
+
+    // Clear autoApply immediately so this effect
+    // cannot execute again for the same navigation.
+    navigate(location.pathname, {
+      replace: true,
+      state: {},
+    });
+
+    setApplicationStarted(true);
+  }, [user, job?.id, location.pathname, location.state?.autoApply, navigate]);
+
   async function handleMarkApplied() {
     if (!user || !job) return;
 
@@ -173,6 +255,105 @@ export default function JobDetails() {
       console.error(err);
     } finally {
       setApplying(false);
+    }
+  }
+
+  function savePendingApplication() {
+    if (!job) return;
+
+    try {
+      sessionStorage.setItem(
+        "jobxportal_pending_application",
+        JSON.stringify({
+          jobId: job.id,
+          applyUrl: job.applyUrl,
+          title: job.title,
+          company: job.company,
+          returnPath: location.pathname,
+        }),
+      );
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
+  function openExternalApplication() {
+    if (!job?.applyUrl) return;
+
+    // Close the login dialog before opening the external tab.
+    // A single modal state guarantees the next dialog cannot overlap it.
+    setApplicationModal(null);
+    savePendingApplication();
+    setApplicationStarted(true);
+    applicationLeftRef.current = false;
+    applicationReturnHandledRef.current = false;
+
+    const sourceTab = window.open(
+      job.applyUrl,
+      "_blank",
+      "noopener,noreferrer",
+    );
+
+    if (!sourceTab) {
+      // Browser blocked the new tab. Keep the user on JobXPortal and let them
+      // retry from the button rather than creating blank/repeated tabs.
+      setApplicationStarted(false);
+    }
+  }
+
+  function handleExternalApply() {
+    if (!job?.applyUrl) return;
+
+    if (!user) {
+      savePendingApplication();
+
+      navigate("/login", {
+        state: {
+          from: location.pathname,
+          autoApply: true,
+        },
+      });
+      return;
+    }
+
+    // This is a real user click, so opening the external source here is
+    // allowed by the browser and will not rely on an async React effect.
+    openExternalApplication();
+  }
+
+  async function handleExternalApplicationStatus(stage) {
+    if (!user || !job) return;
+
+    setSavingApplication(true);
+
+    try {
+      await request("/applications", {
+        method: "POST",
+        body: JSON.stringify({
+          title: job.title,
+          company: job.company,
+          url: job.applyUrl || "",
+          stage,
+          bookmarked: false,
+          notes:
+            stage === "applied"
+              ? "Applied through the original job source."
+              : stage === "saved"
+                ? "Application started but not completed."
+                : "Viewed the external job but did not apply.",
+        }),
+      });
+
+      setApplicationModal(null);
+      sessionStorage.removeItem("jobxportal_pending_application");
+
+      if (stage === "applied") {
+        setApplied(true);
+      }
+    } catch (err) {
+      console.error("Failed to save application:", err);
+    } finally {
+      setSavingApplication(false);
     }
   }
 
@@ -339,8 +520,7 @@ export default function JobDetails() {
   const status = statusFor(job.postedDaysAgo);
 
   const isTruncated =
-    Boolean(job.description) &&
-    job.description.trim().slice(-3) === "...";
+    Boolean(job.description) && job.description.trim().slice(-3) === "...";
 
   const isEmployerJob = String(job.id).startsWith("employer-");
 
@@ -368,14 +548,14 @@ export default function JobDetails() {
 
   const jobTitle = job.title || "Job Opportunity";
   const companyName = job.company || "Company";
-  const location = job.location || "India";
+  const jobLocation = job.location || "India";
   const jobType = job.type || job.employmentType || "Full-time";
   const salary = job.salary || "Salary not disclosed";
 
   const seoTitle = `${jobTitle} at ${companyName} | JobXPortal`;
 
   const seoDescription =
-    `Apply for ${jobTitle} at ${companyName} in ${location}. ` +
+    `Apply for ${jobTitle} at ${companyName} in ${jobLocation}. ` +
     `${jobType}${job.remote ? " · Remote" : ""}. ` +
     `View job details, requirements and application information on JobXPortal.`;
 
@@ -543,7 +723,7 @@ export default function JobDetails() {
                 marginBottom: 20,
               }}
             >
-              <span>{location}</span>
+              <span>{jobLocation}</span>
 
               <span>—</span>
 
@@ -680,40 +860,31 @@ export default function JobDetails() {
               }}
             >
               {job.applyUrl && (
-                <a
-                  href={job.applyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={handleExternalApply}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 8,
-                    background: "#4F46E5",
-                    color: "#FFFFFF",
-                    padding: "13px 26px",
-                    borderRadius: 11,
+                    background: "var(--accent)",
+                    color: "#09090B",
+                    padding: "13px 28px",
+                    borderRadius: 12,
                     fontWeight: 700,
                     fontSize: 14,
                     fontFamily: "Poppins, sans-serif",
                     textDecoration: "none",
-                    transition: "all 0.2s",
-                    boxShadow: "0 8px 20px rgba(79,70,229,0.18)",
+                    transition: "opacity 0.2s",
+                    border: "none",
+                    cursor: "pointer",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#4338CA";
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#4F46E5";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
                 >
-                  {isTruncated
-                    ? "Read Full Description & Apply"
-                    : "Apply Now"}
-
+                  {isTruncated ? "Read Full Description & Apply" : "Apply Now"}
                   <ExternalLink size={15} />
-                </a>
+                </button>
               )}
 
               {user && isEmployerJob && (
@@ -725,9 +896,7 @@ export default function JobDetails() {
                     alignItems: "center",
                     gap: 8,
                     background: applied ? "#ECFDF5" : "#FFFFFF",
-                    border: `1px solid ${
-                      applied ? "#A7F3D0" : "#D9DFEA"
-                    }`,
+                    border: `1px solid ${applied ? "#A7F3D0" : "#D9DFEA"}`,
                     color: applied ? "#059669" : "#475569",
                     padding: "13px 22px",
                     borderRadius: 11,
@@ -910,9 +1079,7 @@ export default function JobDetails() {
                         fontFamily: "Poppins",
                         fontSize: 12,
                         fontWeight: 700,
-                        cursor: reportReason.trim()
-                          ? "pointer"
-                          : "not-allowed",
+                        cursor: reportReason.trim() ? "pointer" : "not-allowed",
                         opacity: reportReason.trim() ? 1 : 0.5,
                       }}
                     >
@@ -926,9 +1093,285 @@ export default function JobDetails() {
         </div>
       </main>
 
+      {applicationModal === "continue" && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="continue-application-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            background: "rgba(15, 23, 42, 0.62)",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 440,
+              background: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              borderRadius: 20,
+              padding: 30,
+              boxShadow: "0 24px 80px rgba(15,23,42,0.28)",
+              animation: "jobxModalIn 180ms ease-out",
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                background: "#EEF2FF",
+                color: "#4F46E5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 23,
+                fontWeight: 800,
+                marginBottom: 18,
+              }}
+            >
+              ↗
+            </div>
+
+            <h2
+              id="continue-application-title"
+              style={{
+                margin: 0,
+                marginBottom: 10,
+                color: "#0B132B",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: 22,
+                lineHeight: 1.25,
+                fontWeight: 800,
+              }}
+            >
+              Continue to application
+            </h2>
+
+            <p
+              style={{
+                margin: 0,
+                marginBottom: 24,
+                color: "#64748B",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: 14,
+                lineHeight: 1.65,
+              }}
+            >
+              Your login was successful. Continue to the original job posting to
+              complete your application.
+            </p>
+
+            <button
+              type="button"
+              onClick={openExternalApplication}
+              style={{
+                width: "100%",
+                padding: "14px 18px",
+                borderRadius: 12,
+                border: "none",
+                background: "#4F46E5",
+                color: "#FFFFFF",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 8px 20px rgba(79,70,229,0.22)",
+              }}
+            >
+              Continue to application ↗
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setApplicationModal(null)}
+              style={{
+                width: "100%",
+                marginTop: 10,
+                padding: "11px 18px",
+                borderRadius: 12,
+                border: "1px solid #E2E8F0",
+                background: "#FFFFFF",
+                color: "#64748B",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {applicationModal === "status" && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="application-status-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            background: "rgba(15, 23, 42, 0.62)",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 440,
+              background: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              borderRadius: 20,
+              padding: 30,
+              boxShadow: "0 24px 80px rgba(15,23,42,0.28)",
+              animation: "jobxModalIn 180ms ease-out",
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                background: "#ECFDF5",
+                color: "#059669",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 22,
+                fontWeight: 800,
+                marginBottom: 18,
+              }}
+            >
+              ✓
+            </div>
+
+            <h2
+              id="application-status-title"
+              style={{
+                margin: 0,
+                marginBottom: 10,
+                color: "#0B132B",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: 22,
+                lineHeight: 1.25,
+                fontWeight: 800,
+              }}
+            >
+              Did you apply?
+            </h2>
+
+            <p
+              style={{
+                margin: 0,
+                marginBottom: 24,
+                color: "#64748B",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: 14,
+                lineHeight: 1.65,
+              }}
+            >
+              Welcome back. Tell us what happened so we can keep your Job
+              Tracker up to date.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => handleExternalApplicationStatus("applied")}
+                disabled={savingApplication}
+                style={{
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: 12,
+                  border: "none",
+                  background: "#4F46E5",
+                  color: "#FFFFFF",
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: savingApplication ? "not-allowed" : "pointer",
+                  opacity: savingApplication ? 0.7 : 1,
+                }}
+              >
+                ✓ Yes, I applied
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleExternalApplicationStatus("saved")}
+                disabled={savingApplication}
+                style={{
+                  width: "100%",
+                  padding: "13px 16px",
+                  borderRadius: 12,
+                  border: "1px solid #CBD5E1",
+                  background: "#FFFFFF",
+                  color: "#334155",
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: savingApplication ? "not-allowed" : "pointer",
+                  opacity: savingApplication ? 0.7 : 1,
+                }}
+              >
+                Not yet
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleExternalApplicationStatus("rejected")}
+                disabled={savingApplication}
+                style={{
+                  width: "100%",
+                  padding: "13px 16px",
+                  borderRadius: 12,
+                  border: "1px solid #CBD5E1",
+                  background: "#FFFFFF",
+                  color: "#64748B",
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: savingApplication ? "not-allowed" : "pointer",
+                  opacity: savingApplication ? 0.7 : 1,
+                }}
+              >
+                Didn't apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
 
       <style>{`
+        @keyframes jobxModalIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
         @media (max-width: 640px) {
           main {
             padding-left: 16px !important;

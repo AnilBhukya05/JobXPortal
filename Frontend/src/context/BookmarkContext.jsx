@@ -1,104 +1,339 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
+
 import { useAuth } from "./AuthContext";
-import { fetchBookmarks, addBookmarkApi, removeBookmarkApi } from "../services/bookmarkService";
+
+import {
+  fetchBookmarks,
+  addBookmarkApi,
+  removeBookmarkApi,
+} from "../services/bookmarkService";
 
 const BookmarkContext = createContext(null);
 
-function toJobShape(b) {
+// Convert backend bookmark into JobXPortal job format
+
+
+function toJobShape(bookmark) {
   return {
-    id: b.jobId,
-    title: b.title,
-    company: b.company,
-    location: b.location,
-    applyUrl: b.url,
-    source: b.source,
+    id: bookmark.jobId,
+    title: bookmark.title || "",
+    company: bookmark.company || "",
+    location: bookmark.location || "",
+    applyUrl: bookmark.url || "",
+    source: bookmark.source || "",
   };
 }
 
+
+// BOOKMARK PROVIDER
+
+
 export function BookmarkProvider({ children }) {
   const { user } = useAuth();
+
+  const userId = user?.id || user?._id || null;
+
   const [bookmarks, setBookmarks] = useState([]);
   const [recent, setRecent] = useState([]);
 
-  const recentKey = user ? `jxp_${user.id}_recent` : null;
+  const recentKey = userId
+    ? `jxp_${userId}_recent`
+    : null;
+
+
+  // LOAD BOOKMARKS
+
 
   const loadBookmarks = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setBookmarks([]);
       return;
     }
+
     try {
-      const { bookmarks } = await fetchBookmarks();
-      setBookmarks(bookmarks.map(toJobShape));
-    } catch {
+      const result = await fetchBookmarks();
+
+      const serverBookmarks = Array.isArray(
+        result?.bookmarks
+      )
+        ? result.bookmarks
+        : [];
+
+      const formattedBookmarks =
+        serverBookmarks.map(toJobShape);
+
+      setBookmarks(formattedBookmarks);
+    } catch (error) {
+      console.error(
+        "Failed to load bookmarks:",
+        error
+      );
+
       setBookmarks([]);
     }
-  }, [user]);
+  }, [userId]);
+
+
+  // LOAD SERVER BOOKMARKS
+  // Runs only when userId changes
+ 
 
   useEffect(() => {
-    loadBookmarks();
-  }, [loadBookmarks]);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (recentKey) {
+    async function load() {
+      if (!userId) {
+        if (!cancelled) {
+          setBookmarks([]);
+        }
+        return;
+      }
+
       try {
-        setRecent(JSON.parse(localStorage.getItem(recentKey)) || []);
-      } catch {
+        const result = await fetchBookmarks();
+
+        if (cancelled) return;
+
+        const serverBookmarks =
+          Array.isArray(result?.bookmarks)
+            ? result.bookmarks
+            : [];
+
+        setBookmarks(
+          serverBookmarks.map(toJobShape)
+        );
+      } catch (error) {
+        console.error(
+          "Failed to load bookmarks:",
+          error
+        );
+
+        if (!cancelled) {
+          setBookmarks([]);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+
+  // LOAD RECENT JOBS
+
+
+  useEffect(() => {
+    if (!recentKey) {
+      setRecent([]);
+      return;
+    }
+
+    try {
+      const stored =
+        localStorage.getItem(recentKey);
+
+      if (!stored) {
+        setRecent([]);
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+
+      if (Array.isArray(parsed)) {
+        setRecent(parsed);
+      } else {
         setRecent([]);
       }
-    } else {
+    } catch (error) {
+      console.error(
+        "Failed to load recent jobs:",
+        error
+      );
+
       setRecent([]);
     }
   }, [recentKey]);
 
-  async function toggle(job) {
-    if (!user) return;
-    const already = bookmarks.some((b) => String(b.id) === String(job.id));
 
-    if (already) {
-      setBookmarks((prev) => prev.filter((b) => String(b.id) !== String(job.id)));
-      try {
-        await removeBookmarkApi(job.id);
-      } catch {
-        loadBookmarks();
+  // TOGGLE BOOKMARK
+
+
+  const toggle = useCallback(
+    async (job) => {
+      if (!userId || !job?.id) {
+        return;
       }
-    } else {
-      setBookmarks((prev) => [job, ...prev]);
+
+      const jobId = String(job.id);
+
+      const alreadyBookmarked =
+        bookmarks.some(
+          (bookmark) =>
+            String(bookmark.id) === jobId
+        );
+
+      // ------------------------------------------
+      // REMOVE BOOKMARK
+      // ------------------------------------------
+
+      if (alreadyBookmarked) {
+        setBookmarks((previous) =>
+          previous.filter(
+            (bookmark) =>
+              String(bookmark.id) !== jobId
+          )
+        );
+
+        try {
+          await removeBookmarkApi(job.id);
+        } catch (error) {
+          console.error(
+            "Failed to remove bookmark:",
+            error
+          );
+
+          await loadBookmarks();
+        }
+
+        return;
+      }
+
+      // ------------------------------------------
+      // ADD BOOKMARK
+      // ------------------------------------------
+
+      setBookmarks((previous) => [
+        job,
+        ...previous,
+      ]);
+
       try {
         await addBookmarkApi({
-          jobId: String(job.id),
-          title: job.title,
-          company: job.company,
-          location: job.location,
-          url: job.applyUrl,
+          jobId,
+          title: job.title || "",
+          company: job.company || "",
+          location: job.location || "",
+          url: job.applyUrl || "",
           source: job.source || "",
         });
-      } catch {
-        loadBookmarks();
+      } catch (error) {
+        console.error(
+          "Failed to add bookmark:",
+          error
+        );
+
+        await loadBookmarks();
       }
-    }
-  }
+    },
+    [userId, bookmarks, loadBookmarks]
+  );
 
-  function isBookmarked(id) {
-    return bookmarks.some((b) => String(b.id) === String(id));
-  }
 
-  function addRecent(job) {
-    if (!user) return;
-    const updated = [job, ...recent.filter((j) => j.id !== job.id)].slice(0, 8);
-    setRecent(updated);
-    localStorage.setItem(recentKey, JSON.stringify(updated));
-  }
+  // CHECK BOOKMARK
+
+
+  const isBookmarked = useCallback(
+    (id) => {
+      return bookmarks.some(
+        (bookmark) =>
+          String(bookmark.id) ===
+          String(id)
+      );
+    },
+    [bookmarks]
+  );
+
+
+
+  const addRecent = useCallback(
+    (job) => {
+      if (!userId || !recentKey || !job?.id) {
+        return;
+      }
+
+      setRecent((previous) => {
+        const updated = [
+          job,
+          ...previous.filter(
+            (item) =>
+              String(item.id) !==
+              String(job.id)
+          ),
+        ].slice(0, 8);
+
+        try {
+          localStorage.setItem(
+            recentKey,
+            JSON.stringify(updated)
+          );
+        } catch (error) {
+          console.error(
+            "Failed to save recent jobs:",
+            error
+          );
+        }
+
+        return updated;
+      });
+    },
+    [userId, recentKey]
+  );
+
+
+  // MEMOIZED CONTEXT VALUE
+
+
+  const contextValue = useMemo(
+    () => ({
+      bookmarks,
+      toggle,
+      isBookmarked,
+      recent,
+      addRecent,
+    }),
+    [
+      bookmarks,
+      toggle,
+      isBookmarked,
+      recent,
+      addRecent,
+    ]
+  );
+
+
+  // PROVIDER
+  
 
   return (
-    <BookmarkContext.Provider value={{ bookmarks, toggle, isBookmarked, recent, addRecent }}>
+    <BookmarkContext.Provider
+      value={contextValue}
+    >
       {children}
     </BookmarkContext.Provider>
   );
 }
 
+// CUSTOM HOOK
+
 export function useBookmarkContext() {
-  const ctx = useContext(BookmarkContext);
-  if (!ctx) throw new Error("useBookmarkContext must be used within a BookmarkProvider");
-  return ctx;
+  const context =
+    useContext(BookmarkContext);
+
+  if (!context) {
+    throw new Error(
+      "useBookmarkContext must be used within BookmarkProvider"
+    );
+  }
+
+  return context;
 }

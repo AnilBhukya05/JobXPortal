@@ -20,7 +20,7 @@ export default function Register() {
   const { register } = useAuth();
 
   const [role, setRole] = useState(
-    location.state?.role === "employer" ? "employer" : "seeker"
+    location.state?.role === "employer" ? "employer" : "seeker",
   );
 
   const [form, setForm] = useState({
@@ -71,13 +71,27 @@ export default function Register() {
     if (result.error) {
       setError(result.error);
       setLoading(false);
-    } else {
-      const dest =
-        location.state?.from ||
-        (role === "employer" ? "/employer/dashboard" : "/profile");
-
-      navigate(dest, { replace: true });
+      return;
     }
+
+    const autoApply = Boolean(location.state?.autoApply);
+
+    /*
+     * Do NOT open the external job here.
+     * After registration, JobDetails shows the "Continue to application"
+     * modal. The external source opens only when the user clicks it.
+     */
+
+    const dest =
+      location.state?.from ||
+      (role === "employer" ? "/employer/dashboard" : "/profile");
+
+    navigate(dest, {
+      replace: true,
+      state: {
+        autoApply,
+      },
+    });
   }
 
   const roleOptions = [
@@ -129,8 +143,7 @@ export default function Register() {
                   width: 34,
                   height: 34,
                   borderRadius: 9,
-                  background:
-                    "linear-gradient(135deg, #4F46E5, #7138E8)",
+                  background: "linear-gradient(135deg, #4F46E5, #7138E8)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -291,9 +304,7 @@ export default function Register() {
                       gap: 6,
                       padding: "14px 10px",
                       borderRadius: 10,
-                      border: `1px solid ${
-                        active ? "#4F46E5" : "#E2E6F0"
-                      }`,
+                      border: `1px solid ${active ? "#4F46E5" : "#E2E6F0"}`,
                       background: active ? "#F4F3FF" : "#FFFFFF",
                       color: active ? "#4F46E5" : "#64748B",
                       cursor: "pointer",
@@ -351,16 +362,11 @@ export default function Register() {
                   autoComplete="email"
                 />
 
-                <label>
-                  {role === "employer" ? "Work email" : "Email"}
-                </label>
+                <label>{role === "employer" ? "Work email" : "Email"}</label>
               </div>
 
               {/* PASSWORD */}
-              <div
-                className="float-field"
-                style={{ position: "relative" }}
-              >
+              <div className="float-field" style={{ position: "relative" }}>
                 <input
                   name="password"
                   type={showPw ? "text" : "password"}

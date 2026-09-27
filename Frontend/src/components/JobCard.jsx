@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Bookmark, Share2 } from "lucide-react";
 import { useState } from "react";
 
 import { statusFor } from "../data/jobs";
 import { useBookmarkContext } from "../context/BookmarkContext";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 
 const statusConfig = {
   NEW: {
@@ -112,6 +113,8 @@ export default function JobCard({ job }) {
   } = useBookmarkContext();
 
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const saved = isBookmarked(job.id);
 
@@ -130,6 +133,67 @@ export default function JobCard({ job }) {
         : "Job saved!",
       saved ? "info" : "success"
     );
+  }
+
+  function handleApply(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!job?.applyUrl) return;
+
+    const jobPath = "/job/" + job.id;
+
+    try {
+      sessionStorage.setItem(
+        "jobxportal_preview_" + job.id,
+        JSON.stringify(job)
+      );
+
+      sessionStorage.setItem(
+        "jobxportal_pending_application",
+        JSON.stringify({
+          jobId: job.id,
+          applyUrl: job.applyUrl,
+          title: job.title,
+          company: job.company,
+          returnPath: jobPath,
+        })
+      );
+    } catch {}
+
+    // Already logged in → open the original source in a NEW TAB
+    // directly from the user's click. This is important because browsers
+    // may block a new tab if it is opened later from useEffect.
+    if (user) {
+      const newTab = window.open(
+        job.applyUrl,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      if (!newTab) {
+        toast("Please allow pop-ups to open the job source.", "error");
+      }
+
+      // Keep JobXPortal open and move the current tab to JobDetails so
+      // the existing return/status flow can continue.
+      navigate(jobPath, {
+        replace: false,
+        state: {
+          applicationWaiting: true,
+        },
+      });
+
+      return;
+    }
+
+    // Not logged in → stay in the SAME TAB and go to Login first.
+    navigate("/login", {
+      state: {
+        from: jobPath,
+        autoApply: true,
+      },
+    });
   }
 
   function handleShare(e) {
@@ -510,10 +574,9 @@ export default function JobCard({ job }) {
 
           {/* APPLY */}
 
-          <a
-            href={job.applyUrl}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={handleApply}
             className="cursor-pointer"
             style={{
               padding:
@@ -549,7 +612,7 @@ export default function JobCard({ job }) {
             }}
           >
             Apply
-          </a>
+          </button>
         </div>
       </div>
 
